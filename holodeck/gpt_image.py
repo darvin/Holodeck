@@ -3,6 +3,7 @@ import torch
 
 model_id = "Envvi/Inkpunk-Diffusion"
 pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
 pipe = pipe.to("cuda")
 
 def generate_image(prompt):

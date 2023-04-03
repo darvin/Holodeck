@@ -133,13 +133,17 @@ class Trigger:
 
 import random
 import base64
+import uuid
+import base64
+
+def generate_short_uuid():
+    uuid_bytes = uuid.uuid4().bytes_le
+    short_uuid_bytes = base64.urlsafe_b64encode(uuid_bytes)[:6]
+    short_uuid = short_uuid_bytes.decode('utf-8')
+    return short_uuid
 
 def get_randomized_id():
-    # Generate a random number between 0 and 2^24-1 (i.e., a 24-bit number)
-    random_number = random.getrandbits(24)
-    # Convert the random number to a 3-byte string and encode it as Base64
-    short_id = base64.urlsafe_b64encode(random_number.to_bytes(3, byteorder='big')).decode('ascii')
-    return short_id
+    return generate_short_uuid()
 
 
 def initialize_location(location_dict, encounters_list):
@@ -185,7 +189,7 @@ def initialize_location(location_dict, encounters_list):
             trigger = Trigger(TriggerType.BUILDING, building=encounter_dict['trigger'].get('building'))
         actions = []
         for action_dict in encounter_dict.get('actions', []) or []:
-            action_type = action_dict['type']
+            action_type = action_dict['type'].strip()
             if action_type in ['character', 'ship']:
                 action = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
             elif action_type == 'item':
