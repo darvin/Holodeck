@@ -6,10 +6,7 @@ pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float
 pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
 pipe = pipe.to("cuda")
 
-style = "vinkpunk"
 def generate_image(prompt):
-    if style not in prompt.lower():
-        prompt += f". n{style}"
     return pipe(prompt).images[0]
  
  

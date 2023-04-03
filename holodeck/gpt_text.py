@@ -38,25 +38,33 @@ def generate_location_and_encounters(prompt):
     ))
     return (location, encounters or [])
 
+style = "solarpunk"
+
+def image_prompt_process(response):
+    p = prompt['text']
+    if style not in prompt.lower():
+        p += f". {style}"
+    return p
+
 
 def generate_location_image_prompt(location):
-    return chain_image_location({
+    return image_prompt_process(chain_image_location({
         'location':location.description,
         'buildings':"\n".join([f"{b.name}: {b.description}" for b in location.buildings])
-    })['text']
+    }))
 
 def generate_building_image_prompt(building, location):
-    return chain_image_building({
+    return image_prompt_process(chain_image_building({
         'location':location.description,
         'building':f"{building.name}: {building.description}",
-    })['text']
+    }))
 
 
 def generate_object_image_prompt(object, location):
-    return chain_image_object({
+    return image_prompt_process(chain_image_object({
         'location':location.description,
         'object':f"{object.name}: {object.description}",
-    })['text']
+    }))
 
 import traceback
 

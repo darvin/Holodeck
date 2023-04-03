@@ -3,12 +3,12 @@ from langchain.prompts import PromptTemplate
 import toml
 
 prompt_image_building = PromptTemplate(
-    input_variables=["building", "location"],
+    input_variables=["building", "location", "style"],
     template="""
 
 generate Midjourney prompt, using following formula:
 
-"An image of a [building] [highly detailed imaginative description of the building] during [time of day] with [type of lighting] and shot using [name of lens] - at 16:9. nvinkpunk"
+"An image of a [building] [highly detailed imaginative description of the building] during [time of day] with [type of lighting] and shot using [name of lens] - at 16:9. {style}"
 
 follow formula!
 
@@ -128,7 +128,7 @@ output valid toml (lowercase keys) of encounters in code block
 )
 
 prompt_image_location = PromptTemplate(
-    input_variables=["location", "buildings"],
+    input_variables=["location", "buildings", "style"],
     template="""
 act as Midjourney prompt generator. use user's prompt as an inspiration to create the best 
 possible prompt to draw a a highly detailed, playable in a game with top down view 
@@ -137,7 +137,7 @@ adventurers or any other characters not referred directly in user's prompt
 
 to generate that prompt, you MUST follow formula:
 
-"An aerial photograph of a [landscape] with [each building mentioned] during [time of day] with [type of lighting] using [name of lens] — at 16:9. nvinkpunk"
+"An aerial photograph of a [landscape] with [each building mentioned] during [time of day] with [type of lighting] using [name of lens] — at 16:9. {style}"
 
 be extremely concise! focus on the extra features, such as buildings.
 
@@ -200,10 +200,10 @@ make sure that every building, way and location have unique 'name' and 'descript
 """)
 
 prompt_image_object = PromptTemplate(
-    input_variables=["object", "location"],
+    input_variables=["object", "location", "style"],
     template="""
 generate Midjourney prompt, using following formula:
-"The entire [object] is visible. [object] with [all specific details] on background of [description of object's background] during [time of day] with [type of lighting]. nvinkpunk"
+"The entire [object] is visible. [object] with [all specific details] on background of [description of object's background] during [time of day] with [type of lighting]. {style}"
 
 focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. follow formula!
 
