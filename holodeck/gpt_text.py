@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-
+from gpt_text_decoding import dejson
+import yaml
 
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path, verbose=True)
@@ -9,8 +10,7 @@ load_dotenv(dotenv_path=env_path, verbose=True)
 
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
-import yaml
-from .prompts import *
+from prompts import *
 
 llm = OpenAI(temperature=0.9)
 
@@ -22,33 +22,20 @@ chain_image_location = LLMChain(llm=llm, prompt=prompt_image_location)
 chain_image_object = LLMChain(llm=llm, prompt=prompt_image_object)
 
 
-import yaml
-
-def deyaml(chain_response):
-    text = chain_response['text']
-    yaml_start = text.find('```')
-    yaml_end = text.rfind('```')
-    if yaml_start != -1 and yaml_end == -1:
-        yaml_end = len(text)-1
-    if yaml_start != -1 and yaml_end != -1 and yaml_start < yaml_end:
-        text = text[yaml_start+3:yaml_end].strip()
-
-    while True:
-        try:
-            return yaml.safe_load(text)
-        except yaml.scanner.ScannerError as e:
-            lines = text.split('\n')
-            if len(lines) == 1:
-                raise e
-            text = '\n'.join(lines[:-1])
-            if len(lines) <= 2:
-                break
-
 
 
 def generate_location_and_encounters(prompt):
-    location = deyaml(chain_location("futuristic city flying cars crazy steampunk"))
-    encounters = deyaml(chain_encounters(yaml.dump(location)))
+    location = dejson(chain_location({
+        'prompt':prompt,
+        'sample_location':prompt_location_sample_location,
+    }))
+    encounters = dejson(chain_encounters(
+        {
+        'json':json.dumps(location),
+        'sample_location':prompt_encounters_sample_location,
+        'sample_encounters':prompt_encounters_sample_encounters,
+    }
+    ))
     return (location, encounters or [])
 
 
