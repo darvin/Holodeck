@@ -117,6 +117,11 @@ def initialize_location(location_dict, encounters_list):
         while True:
             yield i
             i += 1
+    def get_item_number():
+        i = 1
+        while True:
+            yield i
+            i += 1
 
     location = Location(location_dict['name'], location_dict['description'])
     for building_dict in location_dict['buildings']:
@@ -139,7 +144,9 @@ def initialize_location(location_dict, encounters_list):
             action_type = action_dict['type']
             if action_type == 'character':
                 action = Character(action_dict['name'], action_dict['description'])
-            elif action_type == 'critter':
+            elif action_type == 'item':
+                action = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
+            elif action_type in ['critter', 'creature']:
                 action = Critter(action_dict.get('name', f"Critter {get_critter_number()}"), action_dict['description'])
             elif action_type == 'building':
                 action = Building(action_dict['name'], action_dict['description'], True)
