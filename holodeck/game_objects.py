@@ -44,7 +44,7 @@ class Location:
         for encounter in self.encounters:
             for action in encounter.actions:
                 if isinstance(action, Building):
-                    all_buildings.append(action.building)
+                    all_buildings.append(action)
         return all_buildings
     
 class Way:
