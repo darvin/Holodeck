@@ -3,5 +3,5 @@ model_id = "prompthero/openjourney-v4"
 # model_id = "runwayml/stable-diffusion-v1-5"
 
 
-style = "solarpunk"
+style = "art deco"
 # style = "vinkpunk"
