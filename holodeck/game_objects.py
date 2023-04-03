@@ -27,7 +27,26 @@ class Location:
         encounters_str = "\n  ".join([str(e) for e in self.encounters])
         return f"{self.name}\n{self.description}\n\nBuildings:\n  {buildings_str}\n\nWays:\n  {ways_str}\n\nEncounters:\n  {encounters_str}"
 
+    @property
+    def objects(self):
+        objects = []
+        for encounter in self.encounters:
+            for action in encounter.actions:
+                if isinstance(action, Item) or isinstance(action, Critter) or isinstance(action, Character):
+                    objects.append(action)
+        return objects
 
+    @property
+    def all_buildings(self):
+        all_buildings = []
+        for building in self.buildings:
+            all_buildings.append(building)
+        for encounter in self.encounters:
+            for action in encounter.actions:
+                if isinstance(action, Building):
+                    all_buildings.append(action.building)
+        return all_buildings
+    
 class Way:
     def __init__(self, name, description):
         self.name = name
@@ -86,6 +105,7 @@ class Character:
     def __init__(self, name, description):
         self.name = name
         self.description = description
+
     def __str__(self):
         return f"{self.name}: {self.description}"
 
@@ -131,6 +151,8 @@ def initialize_location(location_dict, encounters_list):
         way = Way(way_dict['name'], way_dict['description'])
         location.add_way(way)
     for encounter_dict in encounters_list:
+        if 'trigger' not in encounter_dict:
+            continue
         probability = encounter_dict['probability']
         description = encounter_dict['description']
         trigger_type = encounter_dict['trigger']['type']
