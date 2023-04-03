@@ -160,7 +160,7 @@ def initialize_location(location_dict, encounters_list):
 
 
     location = Location(location_dict['name'], location_dict['description'])
-    for building_dict in location_dict['buildings'] or []:
+    for building_dict in location_dict.get('buildings', []) or []:
         building = Building(building_dict.get('name', f"Building {get_building_number()}"), building_dict['description'], building_dict.get('enterable', False))
         location.add_building(building)
     for way_dict in location_dict.get('ways', []):
