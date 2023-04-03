@@ -143,15 +143,32 @@ def initialize_location(location_dict, encounters_list):
             yield i
             i += 1
 
+    def get_building_number():
+        i = 1
+        while True:
+            yield i
+            i += 1
+
+    def get_character_number():
+        i = 1
+        while True:
+            yield i
+            i += 1
+
+
     location = Location(location_dict['name'], location_dict['description'])
     for building_dict in location_dict['buildings']:
         building = Building(building_dict['name'], building_dict['description'], building_dict.get('enterable', False))
         location.add_building(building)
-    for way_dict in location_dict['ways']:
-        way = Way(way_dict['name'], way_dict['description'])
-        location.add_way(way)
+    for way_dict in location_dict.get('ways', []):
+        try:
+            way = Way(way_dict['name'], way_dict.get('description', ""))
+            location.add_way(way)
+        except TypeError:
+            pass # fixme. happens when GPT returns 'way: Name of Way' - one liner :(
+
     for encounter_dict in encounters_list:
-        if 'trigger' not in encounter_dict:
+        if 'trigger' not in encounter_dict or not encounter_dict['trigger']:
             continue
         probability = encounter_dict['probability']
         description = encounter_dict['description']
@@ -162,16 +179,18 @@ def initialize_location(location_dict, encounters_list):
         elif trigger_type.upper() == TriggerType.BUILDING.name:
             trigger = Trigger(TriggerType.BUILDING, building=encounter_dict['trigger'].get('building'))
         actions = []
-        for action_dict in encounter_dict.get('actions', []):
+        for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type']
             if action_type == 'character':
-                action = Character(action_dict['name'], action_dict['description'])
+                action = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
             elif action_type == 'item':
                 action = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
             elif action_type in ['critter', 'creature']:
                 action = Critter(action_dict.get('name', f"Critter {get_critter_number()}"), action_dict['description'])
             elif action_type == 'building':
-                action = Building(action_dict['name'], action_dict['description'], True)
+                action = Building(action_dict.get('name', f"Building {get_building_number()}"), action_dict['description'], True)
+            else:
+                print(f"unknown type! {action_type}")
             actions.append(action)
         encounter = Encounter(probability, description, trigger, actions)
         location.add_encounter(encounter)

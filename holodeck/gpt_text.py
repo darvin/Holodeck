@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=env_path, verbose=True)
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 import yaml
-from prompts import *
+from .prompts import *
 
 llm = OpenAI(temperature=0.9)
 
