@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-from gpt_text_decoding import deyaml
+from .gpt_text_decoding import deyaml
 import yaml
 
 env_path = Path(".") / ".env"
@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=env_path, verbose=True)
 
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
-from prompts import *
+from .prompts import *
 
 llm = OpenAI(temperature=0.9)
 

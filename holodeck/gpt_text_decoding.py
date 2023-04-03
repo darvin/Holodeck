@@ -14,7 +14,7 @@ def deyaml(chain_response):
     while True:
         try:
             return yaml.safe_load(text)
-        except yaml.scanner.ScannerError as e:
+        except:
             lines = text.split('\n')
             if len(lines) == 1:
                 raise e

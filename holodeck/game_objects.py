@@ -131,34 +131,37 @@ class Trigger:
         return trigger_str
 
 
+import random
+import base64
+
+def get_randomized_id():
+    # Generate a random number between 0 and 2^24-1 (i.e., a 24-bit number)
+    random_number = random.getrandbits(24)
+    # Convert the random number to a 3-byte string and encode it as Base64
+    short_id = base64.urlsafe_b64encode(random_number.to_bytes(3, byteorder='big')).decode('ascii')
+    return short_id
+
+
 def initialize_location(location_dict, encounters_list):
     def get_critter_number():
-        i = 1
-        while True:
-            yield i
-            i += 1
+        return get_randomized_id()
+    
     def get_item_number():
-        i = 1
-        while True:
-            yield i
-            i += 1
+        return get_randomized_id()
+
 
     def get_building_number():
-        i = 1
-        while True:
-            yield i
-            i += 1
+        return get_randomized_id()
+
 
     def get_character_number():
-        i = 1
-        while True:
-            yield i
-            i += 1
+        return get_randomized_id()
+
 
 
     location = Location(location_dict['name'], location_dict['description'])
-    for building_dict in location_dict['buildings']:
-        building = Building(building_dict['name'], building_dict['description'], building_dict.get('enterable', False))
+    for building_dict in location_dict['buildings'] or []:
+        building = Building(building_dict.get('name', f"Building {get_building_number()}"), building_dict['description'], building_dict.get('enterable', False))
         location.add_building(building)
     for way_dict in location_dict.get('ways', []):
         try:
@@ -168,7 +171,9 @@ def initialize_location(location_dict, encounters_list):
             pass # fixme. happens when GPT returns 'way: Name of Way' - one liner :(
 
     for encounter_dict in encounters_list:
-        if 'trigger' not in encounter_dict or not encounter_dict['trigger']:
+        if not encounter_dict.get('trigger') or \
+            not encounter_dict.get('probability') or \
+            not encounter_dict.get('description'):
             continue
         probability = encounter_dict['probability']
         description = encounter_dict['description']
