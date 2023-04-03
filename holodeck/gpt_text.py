@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from .gpt_text_decoding import detoml
 import yaml
+from .settings import style
 
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path, verbose=True)
@@ -38,11 +39,10 @@ def generate_location_and_encounters(prompt):
     ))
     return (location, encounters or [])
 
-style = "solarpunk"
 
 def image_prompt_process(response):
-    p = prompt['text']
-    if style not in prompt.lower():
+    p = response['text']
+    if style not in p.lower():
         p += f". {style}"
     return p
 
@@ -50,13 +50,15 @@ def image_prompt_process(response):
 def generate_location_image_prompt(location):
     return image_prompt_process(chain_image_location({
         'location':location.description,
-        'buildings':"\n".join([f"{b.name}: {b.description}" for b in location.buildings])
+        'buildings':"\n".join([f"{b.name}: {b.description}" for b in location.buildings]),
+        'style':style,
     }))
 
 def generate_building_image_prompt(building, location):
     return image_prompt_process(chain_image_building({
         'location':location.description,
         'building':f"{building.name}: {building.description}",
+        'style':style,
     }))
 
 
@@ -64,6 +66,7 @@ def generate_object_image_prompt(object, location):
     return image_prompt_process(chain_image_object({
         'location':location.description,
         'object':f"{object.name}: {object.description}",
+        'style':style,
     }))
 
 import traceback

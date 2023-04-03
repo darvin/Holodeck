@@ -190,7 +190,7 @@ def initialize_location(location_dict, encounters_list):
         actions = []
         for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type'].strip()
-            if action_type in ['character', 'ship']:
+            if action_type in ['character', 'ship', 'vessel']:
                 action = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
             elif action_type == 'item':
                 action = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
