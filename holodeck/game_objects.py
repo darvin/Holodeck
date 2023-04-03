@@ -159,7 +159,7 @@ def initialize_location(location_dict, encounters_list):
 
 
 
-    location = Location(location_dict['name'], location_dict['description'])
+    location = Location(location_dict['name'], location_dict.get('description', ""))
     for building_dict in location_dict.get('buildings', []) or []:
         building = Building(building_dict.get('name', f"Building {get_building_number()}"), building_dict['description'], building_dict.get('enterable', False))
         location.add_building(building)
@@ -186,7 +186,7 @@ def initialize_location(location_dict, encounters_list):
         actions = []
         for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type']
-            if action_type == 'character':
+            if action_type in ['character', 'ship']:
                 action = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
             elif action_type == 'item':
                 action = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
