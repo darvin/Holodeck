@@ -1,0 +1,20 @@
+{
+  "jupyter.kernels.filter": [
+    {
+      "path": "/home/standard/.local/share/jupyter/kernels/notebooksenv/kernel.json",
+      "type": "jupyterKernelspec"
+    },
+    {
+      "path": "/home/standard/.local/share/jupyter/kernels/python3/kernel.json",
+      "type": "jupyterKernelspec"
+    },
+    {
+      "path": "/usr/bin/python3",
+      "type": "pythonEnvironment"
+    },
+    {
+      "path": "/bin/python3",
+      "type": "pythonEnvironment"
+    }
+  ]
+}
