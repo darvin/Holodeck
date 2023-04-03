@@ -1,6 +1,5 @@
 # prompt_image_building, prompt_encounters, prompt_image_location, prompt_location, prompt_image_object
 from langchain.prompts import PromptTemplate
-import json
 import yaml
 
 prompt_image_building = PromptTemplate(
@@ -21,7 +20,7 @@ located in place with following description: "{location}"
 """,
 )
 
-prompt_encounters_sample_location = json.dumps(yaml.safe_load(
+prompt_encounters_sample_location = yaml.dump(yaml.safe_load(
 """
 name: Jungle of the Laughing Monkeys
 description: >
@@ -41,7 +40,7 @@ ways:
 """
 ))
 
-prompt_encounters_sample_encounters= json.dumps(yaml.safe_load(
+prompt_encounters_sample_encounters= yaml.dump(yaml.safe_load(
 """
 ---
 - probability: 0.1
@@ -82,15 +81,15 @@ prompt_encounters_sample_encounters= json.dumps(yaml.safe_load(
 
 
 prompt_encounters = PromptTemplate(
-    input_variables=["json", "sample_encounters", "sample_location"],
+    input_variables=["yaml", "sample_encounters", "sample_location"],
     template="""
-    act as Random Encounter Generator. you will be given a JSON with description of location, for example:
+    act as Random Encounter Generator. you will be given a YAML with description of location, for example:
 
 ```
 {sample_location}
 ```
 
-you must respond with a JSON containing all possible random encounters, for example:
+you must respond with a YAML containing all possible random encounters, for example:
 
 ```
 {sample_encounters}
@@ -99,11 +98,11 @@ you must respond with a JSON containing all possible random encounters, for exam
 first user's input: 
 
 ```
-{json}
+{yaml}
 ```
 
 do not output any explanations!
-output valid JSON of encounters in code block
+output valid YAML of encounters in code block
     """
 )
 
@@ -133,7 +132,7 @@ don't output explanations, prompt only
 """)
 
 
-prompt_location_sample_location = json.dumps(yaml.safe_load(
+prompt_location_sample_location = yaml.dump(yaml.safe_load(
 """
 ---
 name: Plains north of Castle Little Rock
@@ -170,7 +169,7 @@ note that only name, description, buildings and ways are correct keys
 
 first user's prompt is: "{prompt}"
 
-you must output correct JSON in a code block for easier copying
+you must output correct YAML in a code block for easier copying
 """)
 
 prompt_image_object = PromptTemplate(

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-from gpt_text_decoding import dejson
+from gpt_text_decoding import deyaml
 import yaml
 
 env_path = Path(".") / ".env"
@@ -25,13 +25,13 @@ chain_image_object = LLMChain(llm=llm, prompt=prompt_image_object)
 
 
 def generate_location_and_encounters(prompt):
-    location = dejson(chain_location({
+    location = deyaml(chain_location({
         'prompt':prompt,
         'sample_location':prompt_location_sample_location,
     }))
-    encounters = dejson(chain_encounters(
+    encounters = deyaml(chain_encounters(
         {
-        'json':json.dumps(location),
+        'yaml':yaml.dump(location),
         'sample_location':prompt_encounters_sample_location,
         'sample_encounters':prompt_encounters_sample_encounters,
     }
