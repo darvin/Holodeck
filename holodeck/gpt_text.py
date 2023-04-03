@@ -58,11 +58,18 @@ def generate_object_image_prompt(object, location):
         'object':f"{object.name}: {object.description}",
     })['text']
 
+import traceback
+
 if __name__ == "__main__":
 
     from game_objects import initialize_location
     location_dict, encounters_list = generate_location_and_encounters("futuristic city flying cars crazy steampunk")
-    location = initialize_location(location_dict, encounters_list)
+
+    try:
+        location = initialize_location(location_dict, encounters_list)
+    except KeyError as e:
+        print("Error: Key not found -", e)
+        traceback.print_exc()
     # location_image_prompt = generate_location_image_prompt(location)
 
     objects_image_prompts = [(o, generate_object_image_prompt(o, location)) for o in location.objects]

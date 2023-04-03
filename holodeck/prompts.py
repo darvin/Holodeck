@@ -114,7 +114,7 @@ you must respond with a toml containing all possible random encounters, for exam
 {sample_encounters}
 ```
 
-make sure that every way, critter, character, building and item have unique 'name'!
+make sure that every way, critter, character, building and item have unique 'name' and 'description'!
 
 first user's input: 
 
@@ -196,7 +196,7 @@ note that only name, description, buildings and ways are correct keys
 first user's prompt is: "{prompt}"
 
 you must output correct toml (lowercase keys) in a code block for easier copying
-make sure that every way, building have 'name'!
+make sure that every building, way and location have unique 'name' and 'description'!
 """)
 
 prompt_image_object = PromptTemplate(
