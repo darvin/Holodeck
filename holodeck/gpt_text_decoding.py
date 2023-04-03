@@ -1,16 +1,22 @@
 import json
 import yaml
+from yamlfix import fix_code
 
 
 def deyaml(chain_response):
     text = chain_response['text']
-    print(f">\n{text}\n")
     yaml_start = text.find('```')
     yaml_end = text.rfind('```')
     if yaml_start != -1 and yaml_end == -1:
         yaml_end = len(text)-1
     if yaml_start != -1 and yaml_end != -1 and yaml_start < yaml_end:
         text = text[yaml_start+3:yaml_end].strip()
+
+    # print(f"> STRIPPED: ---\n{text}<<<\n")
+
+    # text = fix_code(text)
+    # print(f"> FIXED: ---\n{text}<<<\n")
+
 
     while True:
         try:
