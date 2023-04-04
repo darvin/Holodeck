@@ -7,9 +7,9 @@ import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 
-from generate_image import generate_image_byte_io, \
+from generate_image import generate_image, \
                 init_generate_image, \
-                generate_image_verified_byte_io
+                generate_image_verified
 
 app = FastAPI()
 
@@ -21,26 +21,40 @@ async def route_root():
 
 
 
-@app.get("/image")
+@app.get("/image",
+    responses = {
+        200: {
+            "content": {"image/png": {}}
+        }
+    },
+    response_class=Response
+)
 async def route_generate_image(prompt:str, api_token:str):
     if api_token != SECRET_API_TOKEN:
         raise HTTPException(status_code=401, detail="Invalid API token")
     if len(prompt) < 5:
         raise HTTPException(status_code=402, detail="Promt must be longer!")
-    byte_io = await generate_image_byte_io(prompt)
+    image_bytes = await generate_image(prompt)
     # Return the image as a response
-    return Response(content=byte_io.getvalue(), media_type="image/png")
+    return Response(content=image_bytes, media_type="image/png")
 
 
-@app.get("/image_verified")
+@app.get("/image_verified",
+    responses = {
+        200: {
+            "content": {"image/png": {}}
+        }
+    },
+    response_class=Response
+)
 async def route_generate_image_verified(prompt:str, api_token:str, max_attempts:int = 3):
     if api_token != SECRET_API_TOKEN:
         raise HTTPException(status_code=401, detail="Invalid API token")
     if len(prompt) < 5:
         raise HTTPException(status_code=402, detail="Promt must be longer!")
-    byte_io = await generate_image_verified_byte_io(prompt, max_attempts)
+    image_bytes = await generate_image_verified(prompt, max_attempts)
     # Return the image as a response
-    return Response(content=byte_io.getvalue(), media_type="image/png")
+    return Response(content=image_bytes, media_type="image/png")
 
 
 
