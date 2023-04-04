@@ -15,7 +15,7 @@ async def generate_image(prompt):
 
     try:
         # Route Generate Image
-        api_response = await api_instance.route_generate_image_verified_image_verified_get(prompt, api_token, max_attempts=2)
+        api_response = await api_instance.route_generate_image_verified_image_verified_get(prompt, api_token, max_attempts=8)
         return api_response
     except Exception as e:
         print("Exception when calling DefaultApi->route_generate_image_image_get: %s\n" % e)
