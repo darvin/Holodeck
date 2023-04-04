@@ -35,7 +35,7 @@ async def generate_image_verified(prompt, max_attempts):
             return convert_image_to_png_bytes(image)
         last_image = image
     if last_image:
-        return convert_image_to_byte_io(last_image)
+        return convert_image_to_png_bytes(last_image)
     raise ValueError("Failed to generate a good image after all attempts")
 
 async def generate_image(prompt):
