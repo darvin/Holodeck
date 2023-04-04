@@ -23,9 +23,16 @@ def convert_image_to_byte_io(image):
 
 
 async def generate_image_verified_byte_io(prompt, max_attempts):
-    image = await generate_image(prompt)
-    is_good = await verify_image(image, prompt)
-    return convert_image_to_byte_io(image)
+    last_image = None
+    for attempt in range(max_attempts):
+        image = await generate_image(prompt)
+        is_good = await verify_image(image, prompt)
+        if is_good:
+            return convert_image_to_byte_io(image)
+        last_image = image
+    if last_image:
+        return convert_image_to_byte_io(last_image)
+    raise ValueError("Failed to generate a good image after all attempts")
 
 async def generate_image_byte_io(prompt):
     output = await generate_image(prompt)

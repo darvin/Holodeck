@@ -37,7 +37,7 @@ async def verify_image(image, prompt):
 def initialize_verify_image():
     llm = OpenAI(temperature=0.9)
     chain_image_verify = LLMChain(llm=llm, prompt=prompt_image_verify)
-    pipe = pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning")
+    pipe = pipeline("image-to-text", model="Salesforce/blip-image-captioning-large")
     return (chain_image_verify, pipe)
 
 
