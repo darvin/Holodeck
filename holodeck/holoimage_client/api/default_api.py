@@ -2,10 +2,10 @@
 from asyncio import get_event_loop
 from typing import TYPE_CHECKING, Awaitable
 
-from holoimage_client import models as m
+from .. import models as m
 
 if TYPE_CHECKING:
-    from holoimage_client.api_client import ApiClient
+    from ..api_client import ApiClient
 
 
 class _DefaultApi:

@@ -1,12 +1,8 @@
 import os
-from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
 from .gpt_text_decoding import detoml
 import yaml
 from .settings import style
 
-env_path = Path(".") / ".env"
-load_dotenv(dotenv_path=env_path, verbose=True)
 
 
 from langchain.llms import OpenAI

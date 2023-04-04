@@ -4,8 +4,9 @@ from typing import Any, Awaitable, Callable, Dict, Generic, Type, TypeVar, overl
 from httpx import AsyncClient, Request, Response
 from pydantic import ValidationError, parse_obj_as
 
-from holoimage_client.api.default_api import AsyncDefaultApi, SyncDefaultApi
-from holoimage_client.exceptions import ResponseHandlingException, UnexpectedResponse
+from .api.default_api import AsyncDefaultApi, SyncDefaultApi
+from .exceptions import ResponseHandlingException, UnexpectedResponse
+import io
 
 ClientT = TypeVar("ClientT", bound="ApiClient")
 
@@ -75,8 +76,11 @@ class ApiClient:
         if response.status_code in [200, 201]:
             try:
                 return parse_obj_as(type_, response.json())
+            except UnicodeDecodeError as e:
+                return io.BytesIO(response.content) ##png received!
             except ValidationError as e:
                 raise ResponseHandlingException(e)
+                
         raise UnexpectedResponse.for_response(response)
 
     async def send_inner(self, request: Request) -> Response:

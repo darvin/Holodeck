@@ -1,13 +1,25 @@
-from diffusers import StableDiffusionPipeline
-import torch
-from .settings import model_id
 
-pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
-pipe = pipe.to("cuda")
+from .holoimage_client import AsyncApis, ApiClient
+# from .holoimage_client import ApiException
+from pprint import pprint
+import os
+from .settings import *
 
-def generate_image(prompt):
-    return pipe(prompt).images[0]
+
+
+
+async def generate_image(prompt):
+    # Create an instance of the API class
+    api_instance = AsyncApis(ApiClient(os.environ.get('HOLOIMAGE_API_URL'))).default_api
+    api_token = os.environ.get('HOLOIMAGE_API_TOKEN')
+
+    try:
+        # Route Generate Image
+        api_response = await api_instance.route_generate_image_image_get(prompt, api_token)
+        return api_response
+    except Exception as e:
+        print("Exception when calling DefaultApi->route_generate_image_image_get: %s\n" % e)
+
  
  
 if __name__=="__main__":
