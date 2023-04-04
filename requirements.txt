@@ -1,0 +1,11 @@
+pyyaml==6.0
+toml==0.10.2
+yamlfix==1.9.0
+langchain==0.0.131
+python-dotenv==1.0.0
+asyncio==3.4.3
+pydantic==1.10.7
+httpx==0.23.3
+openai==0.27.4
+Pillow==9.5.0
+matplotlib==3.7.1
