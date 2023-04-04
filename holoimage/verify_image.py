@@ -56,6 +56,7 @@ def initialize_verify_image(model_id):
     pipe = pipeline("image-to-text", model=model_id)
     return (chain_image_rephrase, chain_image_verify, pipe)
 
-model_id = "Salesforce/blip-image-captioning-large"
+model_id = "microsoft/git-large-textcaps"
+# model_id = "Salesforce/blip-image-captioning-large"
 # model_id = "Salesforce/blip2-opt-6.7b"
 chain_image_rephrase, chain_image_verify, pipe_description = initialize_verify_image(model_id)
