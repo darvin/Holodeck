@@ -2,23 +2,6 @@
 from langchain.prompts import PromptTemplate
 import toml
 
-prompt_image_building = PromptTemplate(
-    input_variables=["building", "location", "style"],
-    template="""
-
-generate Midjourney prompt, using following formula:
-
-"An image of a [building] [highly detailed imaginative description of the building] during [time of day] with [type of lighting] and shot using [name of lens] - at 16:9. {style}"
-
-follow formula!
-
-output prompt for the following building: {building}
-
-located in place with following description: "{location}"
-
-
-""",
-)
 
 prompt_encounters_sample_location = toml.dumps(toml.loads(
 """
@@ -127,30 +110,6 @@ output valid toml (lowercase keys) of encounters in code block
     """
 )
 
-prompt_image_location = PromptTemplate(
-    input_variables=["location", "buildings", "style"],
-    template="""
-act as Midjourney prompt generator. use user's prompt as an inspiration to create the best 
-possible prompt to draw a a highly detailed, playable in a game with top down view 
-description of one square mile location. make sure that prompt that you create does NOT includes 
-adventurers or any other characters not referred directly in user's prompt
-
-to generate that prompt, you MUST follow formula:
-
-"An aerial photograph of a [landscape] with [each building mentioned] during [time of day] with [type of lighting] using [name of lens] — at 16:9. {style}"
-
-be extremely concise! focus on the extra features, such as buildings.
-
-first user's prompt is:
-
-{location}
-
-following buildings are present on this location:
-{buildings}
-
-don't output explanations, prompt only
-
-""")
 
 
 prompt_location_sample_location = toml.dumps(toml.loads(
@@ -199,13 +158,35 @@ you must output correct toml (lowercase keys) in a code block for easier copying
 make sure that every building, way and location have unique 'name' and 'description'!
 """)
 
+
+
+
+prompt_image_building = PromptTemplate(
+    input_variables=["building", "location", "style"],
+    template="""
+
+generate Midjourney prompt, using following formula:
+
+"An image of a [building] [highly detailed imaginative description of the building] during [time of day] with [type of lighting] and shot using [name of lens] - at 16:9. {style}"
+
+follow formula! maximum allowed length of prompt is 77 tokens.
+
+output prompt for the following building: {building}
+
+located in place with following description: "{location}"
+
+
+""",
+)
+
+
 prompt_image_object = PromptTemplate(
     input_variables=["object", "location", "style"],
     template="""
 generate Midjourney prompt, using following formula:
 "The entire [object] is visible. [object] with [all specific details] on background of [description of object's background] during [time of day] with [type of lighting]. {style}"
 
-focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. follow formula!
+focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. follow formula! maximum allowed length of prompt is 77 tokens.
 
 output prompt for the following object: {object}
 
@@ -213,3 +194,27 @@ located in place with following description: "{location}"
 """)
 
 
+prompt_image_location = PromptTemplate(
+    input_variables=["location", "buildings", "style"],
+    template="""
+act as Midjourney prompt generator. use user's prompt as an inspiration to create the best 
+possible prompt to draw a a highly detailed, playable in a game with top down view 
+description of one square mile location. make sure that prompt that you create does NOT includes 
+adventurers or any other characters not referred directly in user's prompt
+
+to generate that prompt, you MUST follow formula:
+
+"An aerial photograph of a [landscape] with [each building mentioned] during [time of day] with [type of lighting] using [name of lens] — at 16:9. {style}"
+
+be extremely concise! focus on the extra features, such as buildings. maximum allowed length of prompt is 77 tokens.
+
+first user's prompt is:
+
+{location}
+
+following buildings are present on this location:
+{buildings}
+
+don't output explanations, prompt only
+
+""")
