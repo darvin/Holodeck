@@ -70,7 +70,9 @@ def image_prompt_process(response):
         print(f"Error decoding >{response['text']}<: prompt and negative_prompt are not found")
         raise Exception
 
-    decoded['prompt'] = "(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, " + decoded['prompt'] 
+    # prefix = "(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, " 
+    prefix = ""
+    decoded['prompt'] = prefix + decoded['prompt'] 
     return decoded
 
 
