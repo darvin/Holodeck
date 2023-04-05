@@ -201,8 +201,6 @@ located in place with following description: "{location}"
 prompt_image_object = PromptTemplate(
     input_variables=["object", "location"],
     template= prompt_image_intro + """
-"{style}" must be included in prompt! 
-
     
 focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. 
 

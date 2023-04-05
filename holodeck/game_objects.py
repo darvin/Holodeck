@@ -181,12 +181,19 @@ def initialize_location(location_dict, encounters_list):
             continue
         probability = encounter_dict['probability']
         description = encounter_dict['description']
-        trigger_type = encounter_dict['trigger']['type']
+
+        trigger_dict = {}
+        if encounter_dict['trigger'] is list:
+            trigger_dict = encounter_dict['trigger'][0]
+        else:
+            trigger_dict = encounter_dict['trigger']
+
+        trigger_type = trigger_dict['type']
         trigger = None
         if trigger_type.upper() == TriggerType.WAY.name:
-            trigger = Trigger(TriggerType.WAY, way=encounter_dict['trigger'].get('way'))
+            trigger = Trigger(TriggerType.WAY, way=trigger_dict.get('way'))
         elif trigger_type.upper() == TriggerType.BUILDING.name:
-            trigger = Trigger(TriggerType.BUILDING, building=encounter_dict['trigger'].get('building'))
+            trigger = Trigger(TriggerType.BUILDING, building=trigger_dict.get('building'))
         actions = []
         for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type'].strip()

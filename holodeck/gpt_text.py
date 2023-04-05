@@ -37,10 +37,7 @@ def generate_location_and_encounters(prompt):
 
 
 def image_prompt_process(response):
-    p = response['text']
-    if style not in p.lower():
-        p += f". {style}"
-    return p
+    return detoml(response)
 
 
 def generate_location_image_prompt(location):

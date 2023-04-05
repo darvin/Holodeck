@@ -7,8 +7,8 @@ from diffusers import StableDiffusionPipeline
 import torch
 from verify_image import verify_image
 
-async def generate_image_raw(prompt):
-    return pipe(prompt).images[0]
+async def generate_image_raw(prompt, negative_prompt):
+    return pipe(prompt=prompt, negative_prompt=negative_prompt).images[0]
 
 
  
@@ -26,10 +26,10 @@ def convert_image_to_png_bytes(image):
     return image_bytes
 
 
-async def generate_image_verified(prompt, max_attempts):
+async def generate_image_verified(prompt, negative_prompt, max_attempts):
     last_image = None
     for attempt in range(max_attempts):
-        image = await generate_image_raw(prompt)
+        image = await generate_image_raw(prompt, negative_prompt)
         is_good = await verify_image(image, prompt)
         if is_good:
             return convert_image_to_png_bytes(image)
@@ -38,8 +38,8 @@ async def generate_image_verified(prompt, max_attempts):
         return convert_image_to_png_bytes(last_image)
     raise ValueError("Failed to generate a good image after all attempts")
 
-async def generate_image(prompt):
-    output = await generate_image_raw(prompt)
+async def generate_image(prompt, negative_prompt):
+    output = await generate_image_raw(prompt, negative_prompt)
     return convert_image_to_png_bytes(output)
 
 def init_generate_image():

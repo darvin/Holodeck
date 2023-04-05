@@ -8,8 +8,8 @@ from yamlfix import fix_code
 def add_quotes(text):
     lines = text.split('\n')
     for i in range(len(lines)):
-        line = lines[i]
-        if len(line) > 89 and line[-1] != '"':
+        line = lines[i].strip(" .")
+        if line.count('"') == 1:
             lines[i] = line + '"'
     return '\n'.join(lines)
 
@@ -26,6 +26,7 @@ def detoml(chain_response):
     # print(f"> STRIPPED: ---\n{text}<<<\n")
 
     text = add_quotes(text)
+    text = text.strip(' `')
     # print(f"> FIXED: ---\n{text}<<<\n")
 
 
@@ -36,14 +37,14 @@ def detoml(chain_response):
                 obj = obj['root']
             print(f"<\n{obj}\n")
             return obj
-        except:
+        except Exception as e:
             lines = text.split('\n')
             if len(lines) == 1:
                 print(f"ERROR DECODING: \n'{chain_response['text']}<<<\n")
                 raise e
             text = '\n'.join(lines[:-1])
             if len(lines) <= 2:
-                print(f"UNABLE TO DECODE: \n'{chain_response['text']}<<<\n")
+                print(f"UNABLE TO DECODE: \n'{chain_response['text']}<<<, error: {e}\n")
                 break
 
 def deyaml(chain_response):

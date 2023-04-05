@@ -29,12 +29,12 @@ async def route_root():
     },
     response_class=Response
 )
-async def route_generate_image(prompt:str, api_token:str):
+async def route_generate_image(prompt:str, negative_prompt:str, api_token:str):
     if api_token != SECRET_API_TOKEN:
         raise HTTPException(status_code=401, detail="Invalid API token")
     if len(prompt) < 5:
         raise HTTPException(status_code=402, detail="Promt must be longer!")
-    image_bytes = await generate_image(prompt)
+    image_bytes = await generate_image(prompt, negative_prompt)
     # Return the image as a response
     return Response(content=image_bytes, media_type="image/png")
 
@@ -47,12 +47,12 @@ async def route_generate_image(prompt:str, api_token:str):
     },
     response_class=Response
 )
-async def route_generate_image_verified(prompt:str, api_token:str, max_attempts:int = 3):
+async def route_generate_image_verified(prompt:str, negative_prompt:str, api_token:str, max_attempts:int = 3):
     if api_token != SECRET_API_TOKEN:
         raise HTTPException(status_code=401, detail="Invalid API token")
     if len(prompt) < 5:
         raise HTTPException(status_code=402, detail="Promt must be longer!")
-    image_bytes = await generate_image_verified(prompt, max_attempts)
+    image_bytes = await generate_image_verified(prompt, negative_prompt, max_attempts)
     # Return the image as a response
     return Response(content=image_bytes, media_type="image/png")
 
