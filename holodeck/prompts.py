@@ -159,17 +159,35 @@ make sure that every building, way and location have unique 'name' and 'descript
 """)
 
 
+image_sample1 = {
+    'prompt':"(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, long shot of a man wearing an astronaut suit standing on the surface of a planet with a red sun in the sky in the middle of a storm, masterpiece, realistic, high resolution, very detailed, greeble, intricate, centered, face focus,(by Artist WLOP:1.3),Highly Detailed,Featured on CGSociety,Trending on ArtStation.",
+    'negative_prompt':"Scribbles,Low quality,Low rated,Mediocre,3D rendering,Screenshot,Software,UI,((watermark)),(text),(overlay),getty images,(cropped),low quality,worst quality"
+}
 
+image_sample2 = {
+    'prompt':"(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, upper body portrait of a beautiful green-eyed (brunette:1.4) woman wearing an astronaut suit and cowboy hat looking at the camera, background is the surface of a planet with a red sun in the sky in the middle of a storm, spacecowboy, masterpiece, realistic, high resolution, very detailed, greeble, intricate, centered, face focus, Highly Detailed, Featured on CGSociety, Trending on ArtStation",
+    'negative_prompt':"helmet, Scribbles, Low quality, Low rated,Mediocre,3D rendering, Screenshot, Software, UI,((watermark)),(text),(overlay), getty images,(cropped),low quality, worst quality"
+}
+
+prompt_image_intro = f"""
+Act as Stable Diffusion prompt generator. 
+
+if user says: "astranaut on mars", respond with following correct toml, without any explanations:
+{toml.dumps(image_sample1)}
+
+
+if user says "woman space cowboy", respond with following TOML:
+{toml.dumps(image_sample2)}
+
+Try adding celebrity names with low emphasis eg "nvinkpunk beautiful woman, [[taylor swift]].
+
+Maximum allowed length of the prompt is 77 tokens
+"""
 
 prompt_image_building = PromptTemplate(
-    input_variables=["building", "location", "style"],
-    template="""
+    input_variables=["building", "location"],
+    template= prompt_image_intro +"""
 
-generate Midjourney prompt, using following formula:
-
-"An image of a [building] [highly detailed imaginative description of the building] during [time of day] with [type of lighting] and shot using [name of lens] - at 16:9. {style}"
-
-follow formula! maximum allowed length of prompt is 77 tokens.
 
 output prompt for the following building: {building}
 
@@ -181,12 +199,12 @@ located in place with following description: "{location}"
 
 
 prompt_image_object = PromptTemplate(
-    input_variables=["object", "location", "style"],
-    template="""
-generate Midjourney prompt, using following formula:
-"The entire [object] is visible. [object] with [all specific details] on background of [description of object's background] during [time of day] with [type of lighting]. {style}"
+    input_variables=["object", "location"],
+    template= prompt_image_intro + """
+"{style}" must be included in prompt! 
 
-focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. follow formula! maximum allowed length of prompt is 77 tokens.
+    
+focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. 
 
 output prompt for the following object: {object}
 
@@ -195,16 +213,14 @@ located in place with following description: "{location}"
 
 
 prompt_image_location = PromptTemplate(
-    input_variables=["location", "buildings", "style"],
-    template="""
-act as Midjourney prompt generator. use user's prompt as an inspiration to create the best 
+    input_variables=["location", "buildings"],
+    template=prompt_image_intro + """
+ must be included in prompt! 
+
+use user's prompt as an inspiration to create the best 
 possible prompt to draw a a highly detailed, playable in a game with top down view 
 description of one square mile location. make sure that prompt that you create does NOT includes 
 adventurers or any other characters not referred directly in user's prompt
-
-to generate that prompt, you MUST follow formula:
-
-"An aerial photograph of a [landscape] with [each building mentioned] during [time of day] with [type of lighting] using [name of lens] — at 16:9. {style}"
 
 be extremely concise! focus on the extra features, such as buildings. maximum allowed length of prompt is 77 tokens.
 
@@ -215,6 +231,5 @@ first user's prompt is:
 following buildings are present on this location:
 {buildings}
 
-don't output explanations, prompt only
 
 """)
