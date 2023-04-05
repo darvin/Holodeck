@@ -147,6 +147,9 @@ def get_randomized_id():
 
 
 def initialize_location(location_dict, encounters_list):
+    def get_location_number():
+        return get_randomized_id()
+
     def get_critter_number():
         return get_randomized_id()
     
@@ -160,16 +163,18 @@ def initialize_location(location_dict, encounters_list):
 
     def get_character_number():
         return get_randomized_id()
+    
+    def get_way_number():
+        return get_randomized_id()
 
 
-
-    location = Location(location_dict['name'], location_dict.get('description', ""))
+    location = Location(location_dict.get('name', f"Location {get_location_number()}"), location_dict.get('description', ""))
     for building_dict in location_dict.get('buildings', []) or []:
         building = Building(building_dict.get('name', f"Building {get_building_number()}"), building_dict.get('description', ""), building_dict.get('enterable', False))
         location.add_building(building)
     for way_dict in location_dict.get('ways', []):
         try:
-            way = Way(way_dict['name'], way_dict.get('description', ""))
+            way = Way(way_dict.get('name', f"Way {get_way_number()}"), way_dict.get('description', ""))
             location.add_way(way)
         except TypeError:
             pass # fixme. happens when GPT returns 'way: Name of Way' - one liner :(
@@ -183,7 +188,7 @@ def initialize_location(location_dict, encounters_list):
         description = encounter_dict['description']
 
         trigger_dict = {}
-        if encounter_dict['trigger'] is list:
+        if isinstance(encounter_dict['trigger'] , list):
             trigger_dict = encounter_dict['trigger'][0]
         else:
             trigger_dict = encounter_dict['trigger']
@@ -201,7 +206,7 @@ def initialize_location(location_dict, encounters_list):
                 action = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
             elif action_type == 'item':
                 action = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
-            elif action_type in ['critter', 'creature']:
+            elif action_type in ['critter', 'creature', 'computer']:
                 action = Critter(action_dict.get('name', f"Critter {get_critter_number()}"), action_dict['description'])
             elif action_type == 'building':
                 action = Building(action_dict.get('name', f"Building {get_building_number()}"), action_dict['description'], True)

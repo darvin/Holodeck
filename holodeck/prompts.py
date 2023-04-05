@@ -160,12 +160,12 @@ make sure that every building, way and location have unique 'name' and 'descript
 
 
 image_sample1 = {
-    'prompt':"(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, long shot of a man wearing an astronaut suit standing on the surface of a planet with a red sun in the sky in the middle of a storm, masterpiece, realistic, high resolution, very detailed, greeble, intricate, centered, face focus,(by Artist WLOP:1.3),Highly Detailed,Featured on CGSociety,Trending on ArtStation.",
+    'prompt':"(long shot) of a (man:1.8) wearing an (astronaut suit:1.4) standing on the surface of a planet with a (red sun) in the sky in the middle of a storm, .",
     'negative_prompt':"Scribbles,Low quality,Low rated,Mediocre,3D rendering,Screenshot,Software,UI,((watermark)),(text),(overlay),getty images,(cropped),low quality,worst quality"
 }
 
 image_sample2 = {
-    'prompt':"(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, upper body portrait of a beautiful green-eyed (brunette:1.4) woman wearing an astronaut suit and cowboy hat looking at the camera, background is the surface of a planet with a red sun in the sky in the middle of a storm, spacecowboy, masterpiece, realistic, high resolution, very detailed, greeble, intricate, centered, face focus, Highly Detailed, Featured on CGSociety, Trending on ArtStation",
+    'prompt':"(upper body portrait) of a beautiful (green-eyed) (brunette:1.4) (woman:1.4) wearing an (astronaut suit) and (cowboy hat) looking at the camera, background is the surface of a planet with a (red sun) in the sky [in the middle of a storm], spacecowboy, masterpiece, realistic, high resolution, very detailed",
     'negative_prompt':"helmet, Scribbles, Low quality, Low rated,Mediocre,3D rendering, Screenshot, Software, UI,((watermark)),(text),(overlay), getty images,(cropped),low quality, worst quality"
 }
 
@@ -179,9 +179,11 @@ if user says: "astranaut on mars", respond with following correct toml, without 
 if user says "woman space cowboy", respond with following TOML:
 {toml.dumps(image_sample2)}
 
-Try adding celebrity names with low emphasis eg "nvinkpunk beautiful woman, [[taylor swift]].
+Be concise! Avoid placing into the prompt words that might be in any way confusing: don't place there adjectives and nouns that shouldn't be on the picture!
+use (words:emphasis_modifier) to change the emphasis. (range is  0.1 to 1.9)
+Maximum allowed length of the prompt is 50 tokens. if you generate prompt with less than 50 tokens, add anything of following to the prompt until its 77 tokens: "masterpiece, realistic, high resolution, very detailed, greeble, intricate, centered, (by Artist WLOP:1.3),Highly Detailed,Featured on CGSociety,Trending on ArtStation"
 
-Maximum allowed length of the prompt is 77 tokens
+Add things that shouldn't be on the picture, things that picture may be confused with but shouldn't to negative_prompt.
 """
 
 prompt_image_building = PromptTemplate(
@@ -202,7 +204,15 @@ prompt_image_object = PromptTemplate(
     input_variables=["object", "location"],
     template= prompt_image_intro + """
     
-focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. 
+focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. Avoid placing anything not related to the object into prompt!
+
+place lower ephasis on surroundings, higher on the object itself.
+
+If object is a human or humanoid character, add "face-focused" to prompt.
+
+if object is human, add celebrity names of appropriate gender with low emphasis eg " beautiful woman, [[taylor swift]], intricate"
+
+If object is a living creature, make sure that prompt is not "back view": it should be full body view for non humanoids and portrait for humans/humanoids!
 
 output prompt for the following object: {object}
 
@@ -221,6 +231,8 @@ description of one square mile location. make sure that prompt that you create d
 adventurers or any other characters not referred directly in user's prompt
 
 be extremely concise! focus on the extra features, such as buildings. maximum allowed length of prompt is 77 tokens.
+
+prompt must include "Bird eye view"/"Aerial photography"!
 
 first user's prompt is:
 

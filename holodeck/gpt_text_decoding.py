@@ -5,12 +5,13 @@ from yamlfix import fix_code
 
 
 
-def add_quotes(text):
+def clean_line_by_line(text):
     lines = text.split('\n')
     for i in range(len(lines)):
-        line = lines[i].strip(" .")
+        line = lines[i].strip(" .(")
         if line.count('"') == 1:
-            lines[i] = line + '"'
+            line += '"'
+        lines[i] = line
     return '\n'.join(lines)
 
 
@@ -25,7 +26,7 @@ def detoml(chain_response):
 
     # print(f"> STRIPPED: ---\n{text}<<<\n")
 
-    text = add_quotes(text)
+    text = clean_line_by_line(text)
     text = text.strip(' `')
     # print(f"> FIXED: ---\n{text}<<<\n")
 
@@ -36,6 +37,8 @@ def detoml(chain_response):
             if 'root' in obj:
                 obj = obj['root']
             print(f"<\n{obj}\n")
+            if obj is dict:
+                obj = {key.lower(): value for key, value in obj.items()}
             return obj
         except Exception as e:
             lines = text.split('\n')
@@ -43,9 +46,6 @@ def detoml(chain_response):
                 print(f"ERROR DECODING: \n'{chain_response['text']}<<<\n")
                 raise e
             text = '\n'.join(lines[:-1])
-            if len(lines) <= 2:
-                print(f"UNABLE TO DECODE: \n'{chain_response['text']}<<<, error: {e}\n")
-                break
 
 def deyaml(chain_response):
     text = chain_response['text']

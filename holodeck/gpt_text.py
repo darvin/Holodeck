@@ -9,6 +9,34 @@ from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from .prompts import *
 
+
+import logging
+import functools
+
+# Configure logging to stdout
+logging.basicConfig(level=logging.ERROR)
+
+
+def retry(max_attempt: int=3):
+    """
+    Function decorator that retries calling a function with a specified maximum number of attempts,
+    logs errors to stdout, and raises an exception if the function fails after reaching the maximum number of attempts.
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            attempts = 0
+            while attempts < max_attempt:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    # Log the error to stdout
+                    print(f'Error in function {func.__name__}: {e}')
+                    attempts += 1
+            raise Exception(f'Function {func.__name__} failed after {max_attempt} attempts')
+        return wrapper
+    return decorator
+
 llm = OpenAI(temperature=0.9)
 
 
@@ -37,9 +65,16 @@ def generate_location_and_encounters(prompt):
 
 
 def image_prompt_process(response):
-    return detoml(response)
+    decoded = detoml(response)
+    if 'prompt' not in decoded or 'negative_prompt' not in decoded:
+        print(f"Error decoding >{response['text']}<: prompt and negative_prompt are not found")
+        raise Exception
+
+    decoded['prompt'] = "(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, " + decoded['prompt'] 
+    return decoded
 
 
+@retry(3)
 def generate_location_image_prompt(location):
     return image_prompt_process(chain_image_location({
         'location':location.description,
@@ -47,6 +82,7 @@ def generate_location_image_prompt(location):
         'style':style,
     }))
 
+@retry(3)
 def generate_building_image_prompt(building, location):
     return image_prompt_process(chain_image_building({
         'location':location.description,
@@ -54,7 +90,7 @@ def generate_building_image_prompt(building, location):
         'style':style,
     }))
 
-
+@retry(3)
 def generate_object_image_prompt(object, location):
     return image_prompt_process(chain_image_object({
         'location':location.description,
