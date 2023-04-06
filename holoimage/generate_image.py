@@ -5,7 +5,7 @@ import numpy as np
 from io import BytesIO
 from diffusers import StableDiffusionPipeline
 import torch
-from verify_image import verify_image
+from .verify_image import verify_image
 
 async def generate_image_raw(prompt, negative_prompt):
     return pipe(prompt=prompt, negative_prompt=negative_prompt).images[0]

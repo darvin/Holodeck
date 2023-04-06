@@ -7,9 +7,11 @@ import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 
-from generate_image import generate_image, \
+from .generate_image import generate_image, \
                 init_generate_image, \
                 generate_image_verified
+
+
 
 app = FastAPI()
 
