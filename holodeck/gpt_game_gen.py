@@ -55,6 +55,20 @@ def initialize_location(location_dict, encounters_list):
         except TypeError:
             pass # fixme. happens when GPT returns 'way: Name of Way' - one liner :(
 
+    def get_or_create_way_by_name(way_name):
+        for way in location.ways:
+            if way.name.lower() == way_name.lower():
+                location.add_way(way)
+                return way
+        return Way(way_name, f"<a description of way {way_name}>")
+
+    def get_or_create_building_by_name(building_name):
+        for building in location.all_buildings:
+            if building.name.lower() == building_name.lower():
+                #no need to add building cause it may be built on the location per trigger
+                return building
+        return Building(building_name, f"<a description of building {building_name}>")
+
     for encounter_dict in encounters_list:
         if not encounter_dict.get('trigger') or \
             not encounter_dict.get('probability') or \
@@ -73,9 +87,9 @@ def initialize_location(location_dict, encounters_list):
             trigger_type = trigger_dict['type']
             trigger = None
             if trigger_type.upper() == TriggerType.WAY.name:
-                trigger = Trigger(TriggerType.WAY, way=trigger_dict.get('way'))
+                trigger = Trigger(TriggerType.WAY, way=get_or_create_way_by_name(trigger_dict.get('way')))
             elif trigger_type.upper() == TriggerType.BUILDING.name:
-                trigger = Trigger(TriggerType.BUILDING, building=trigger_dict.get('building'))
+                trigger = Trigger(TriggerType.BUILDING, building=get_or_create_building_by_name(trigger_dict.get('building')))
             if trigger:
                 triggers.append(trigger)
         actions = []

@@ -3,9 +3,7 @@ from typing import List, Optional
 from sqlmodel import SQLModel, Field, Relationship
 
 
-class TriggerType(str, Enum):
-    WAY = "way"
-    BUILDING = "building"
+
 
 class Location(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -123,6 +121,11 @@ class Critter(SQLModel, table=True):
     def __str__(self):
         return f"{self.name}: {self.description}"
     
+
+class TriggerType(str, Enum):
+    WAY = "way"
+    BUILDING = "building"
+
 class Trigger(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     type: TriggerType
@@ -140,12 +143,17 @@ class Trigger(SQLModel, table=True):
         self.building = building
 
     def __str__(self):
-        trigger_str = f"{self.type_.name}: "
-        for key, value in self.__dict__.items():
-            if key != "type_":
-                trigger_str += f"{key}={value}, "
-        trigger_str = trigger_str.rstrip(", ")
-        return trigger_str
+        fields = []
+        if self.id:
+            fields.append(f"id={self.id}")
+        if self.type:
+            fields.append(f"type={self.type.name}")
+        if self.way:
+            fields.append(f"way={self.way.name}")
+        if self.building:
+            fields.append(f"building={self.building.name}")
+        fields.append(f"encounter_id={self.encounter_id}")
+        return f"Trigger({', '.join(fields)})"
 
 
 class Encounter(SQLModel, table=True):
