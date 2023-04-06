@@ -1,16 +1,24 @@
 from enum import Enum
+from typing import List, Optional
+from sqlmodel import SQLModel, Field, Relationship
 
-class TriggerType(Enum):
-    WAY = 1
-    BUILDING = 2
 
-class Location:
+class TriggerType(str, Enum):
+    WAY = "way"
+    BUILDING = "building"
+
+class Location(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    buildings: List["Building"] = Relationship(back_populates="location")
+    ways: List["Way"] = Relationship(back_populates="location")
+    encounters: List["Encounter"] = Relationship(back_populates="location")
+    characters: List["Character"] = Relationship(back_populates="location")
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
-        self.buildings = []
-        self.ways = []
-        self.encounters = []
 
     def add_encounter(self, encounter):
         self.encounters.append(encounter)
@@ -47,16 +55,29 @@ class Location:
                     all_buildings.append(action)
         return all_buildings
     
-class Way:
+class Way(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    location_id: int = Field(foreign_key="location.id")
+    location: Optional[Location] = Relationship(back_populates="ways")
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
-
         
     def __str__(self):
         return f"{self.name}: {self.description}"
 
-class Building:
+class Building(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    enterable: bool
+    location_id: int = Field(foreign_key="location.id")
+    location: Optional[Location] = Relationship(back_populates="buildings")
+
+
     def __init__(self, name, description, enterable):
         self.name = name
         self.description = description
@@ -66,42 +87,106 @@ class Building:
         enter_str = "Enterable" if self.enterable else "Not enterable"
         return f"{self.name}: {self.description} ({enter_str})"
 
-class Item:
+class Item(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
-    def __str__(self):
-        return f"{self.name}: {self.description}"
 
-class Action:
-    def __init__(self, type, description, name=None):
+class Action(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    type: str
+  
+    encounter_id: int = Field(foreign_key="encounter.id")
+    encounter: Optional['Encounter'] = Relationship(back_populates="actions")
+
+
+    critter_id: Optional[int] = Field(foreign_key="critter.id")
+    critter: Optional['Critter'] = Relationship()
+    character_id: Optional[int] = Field(foreign_key="character.id")
+    character: Optional['Character'] = Relationship()
+    item_id: Optional[int] = Field(foreign_key="item.id")
+    item: Optional['Item'] = Relationship()
+    building_id: Optional[int] = Field(foreign_key="building.id")
+    building: Optional['Building'] = Relationship()
+
+
+    def __init__(self, type, obj=None, building=None, item=None, critter=None, character=None):
         self.type = type
-        self.description = description
-        self.name = name
+
+        if building is not None:
+            self.building = building
+        if item is not None:
+            self.item = item
+        if critter is not None:
+            self.critter = critter
+        if character is not None:
+            self.character = character
+
+        if obj is not None:
+            if isinstance(obj, Critter):
+                self.critter = obj
+            elif isinstance(obj, Character):
+                self.character = obj
+            elif isinstance(obj, Item):
+                self.item = obj
+            elif isinstance(obj, Building):
+                self.building = obj
+            else:
+                raise ValueError("Invalid object type passed to Action.__init__")
+
 
     def __str__(self):
-        action_str = f"{self.type_}:\n"
-        for key, value in self.__dict__.items():
-            if key != "type_":
-                action_str += f"{key}: {value}\n"
-        return action_str
+        components = [f"id={self.id}", f"type={self.type}"]
+        if self.building:
+            components.append(f"building={self.building}")
+        if self.item:
+            components.append(f"item={self.item}")
+        if self.critter:
+            components.append(f"critter={self.critter}")
+        if self.character:
+            components.append(f"character={self.character}")
+        return ", ".join(components)
 
 
-class Encounter:
+
+class Encounter(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    probability: float
+    description: str
+    actions: List[Action] = Relationship(back_populates="encounter")
+    location_id: int = Field(foreign_key="location.id")
+    location: Optional[Location] = Relationship(back_populates="encounters")
+    triggers: List['Trigger'] = Relationship(back_populates="encounter")
+
+
+
     def __init__(self, probability, description, trigger, actions):
         self.probability = probability
         self.description = description
-        self.trigger = trigger
+        self.triggers = [trigger]
         self.actions = actions
+
     def __str__(self):
-        if self.trigger:
-            trigger_str = f"{self.trigger.type.name}: {self.trigger.way}" if self.trigger.way else f"{self.trigger.type.name}: {self.trigger.building}"
+        if self.triggers:
+            trigger = self.triggers[0]
+            trigger_str = f"{trigger.type.name}: {trigger.way}" if trigger.way else f"{trigger.type.name}: {trigger.building}"
         else:
             trigger_str = ""
         action_str = "\n".join([f"  {action}" for action in self.actions])
         return f"Encounter ({self.probability * 100}%): {self.description}\nTrigger: {trigger_str}\nActions:\n{action_str}"
 
-class Character:
+class Character(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    location_id: Optional[int] = Field(foreign_key="location.id", default=None)
+    location: Optional[Location] = Relationship(back_populates="characters")
+
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -109,19 +194,35 @@ class Character:
     def __str__(self):
         return f"{self.name}: {self.description}"
 
-class Critter:
+class Critter(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
+
     def __str__(self):
         return f"{self.name}: {self.description}"
     
-class Trigger:
+class Trigger(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    type: TriggerType
+    way_id: Optional[int] = Field(foreign_key="way.id")
+    way: Optional[Way] = Relationship()
+    building_id: Optional[int] = Field(foreign_key="building.id")
+    building: Optional[Building] = Relationship()
+    encounter_id: int = Field(foreign_key="encounter.id")
+    encounter: Optional['Encounter'] = Relationship(back_populates="triggers")
+
+
+
     def __init__(self, type, way=None, building=None):
         self.type = type
         self.way = way
         self.building = building
-    
+
     def __str__(self):
         trigger_str = f"{self.type_.name}: "
         for key, value in self.__dict__.items():
@@ -130,128 +231,3 @@ class Trigger:
         trigger_str = trigger_str.rstrip(", ")
         return trigger_str
 
-
-import random
-import base64
-import uuid
-import base64
-
-def generate_short_uuid():
-    uuid_bytes = uuid.uuid4().bytes_le
-    short_uuid_bytes = base64.urlsafe_b64encode(uuid_bytes)[:6]
-    short_uuid = short_uuid_bytes.decode('utf-8')
-    return short_uuid
-
-def get_randomized_id():
-    return generate_short_uuid()
-
-
-def initialize_location(location_dict, encounters_list):
-    def get_location_number():
-        return get_randomized_id()
-
-    def get_critter_number():
-        return get_randomized_id()
-    
-    def get_item_number():
-        return get_randomized_id()
-
-
-    def get_building_number():
-        return get_randomized_id()
-
-
-    def get_character_number():
-        return get_randomized_id()
-    
-    def get_way_number():
-        return get_randomized_id()
-
-
-    location = Location(location_dict.get('name', f"Location {get_location_number()}"), location_dict.get('description', ""))
-    for building_dict in location_dict.get('buildings', []) or []:
-        building = Building(building_dict.get('name', f"Building {get_building_number()}"), building_dict.get('description', ""), building_dict.get('enterable', False))
-        location.add_building(building)
-    for way_dict in location_dict.get('ways', []):
-        try:
-            way = Way(way_dict.get('name', f"Way {get_way_number()}"), way_dict.get('description', ""))
-            location.add_way(way)
-        except TypeError:
-            pass # fixme. happens when GPT returns 'way: Name of Way' - one liner :(
-
-    for encounter_dict in encounters_list:
-        if not encounter_dict.get('trigger') or \
-            not encounter_dict.get('probability') or \
-            not encounter_dict.get('description'):
-            continue
-        probability = encounter_dict['probability']
-        description = encounter_dict['description']
-
-        trigger_dict = {}
-        if isinstance(encounter_dict['trigger'] , list):
-            trigger_dict = encounter_dict['trigger'][0]
-        else:
-            trigger_dict = encounter_dict['trigger']
-
-        trigger_type = trigger_dict['type']
-        trigger = None
-        if trigger_type.upper() == TriggerType.WAY.name:
-            trigger = Trigger(TriggerType.WAY, way=trigger_dict.get('way'))
-        elif trigger_type.upper() == TriggerType.BUILDING.name:
-            trigger = Trigger(TriggerType.BUILDING, building=trigger_dict.get('building'))
-        actions = []
-        for action_dict in encounter_dict.get('actions', []) or []:
-            action_type = action_dict['type'].strip()
-            if action_type in ['character', 'ship', 'vessel', 'characters']:
-                action = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
-            elif action_type == 'item':
-                action = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
-            elif action_type in ['critter', 'creature', 'computer']:
-                action = Critter(action_dict.get('name', f"Critter {get_critter_number()}"), action_dict['description'])
-            elif action_type == 'building':
-                action = Building(action_dict.get('name', f"Building {get_building_number()}"), action_dict['description'], True)
-            else:
-                print(f"unknown type! {action_type}")
-            actions.append(action)
-        encounter = Encounter(probability, description, trigger, actions)
-        location.add_encounter(encounter)
-    return location
-
-
-if __name__ == "__main__":
-    location_dict = \
-{'name': 'Sky City Clankersburg',
- 'description': 'A large floating city comprised of steampunk-style buildings and vehicles. The city is bustling with activity, and people are zipping around on flying cars of all shapes and sizes. In the center of the city is an airship dock, with several airships coming and going. \n',
- 'buildings': [{'name': 'Airship Dock',
-   'description': 'A large dock with several airships coming and going.',
-   'enterable': True},
-  {'name': 'Steampunk-style Buildings',
-   'description': 'Several buildings made of various materials and with various contraptions and decorations.'}],
- 'ways': [{'name': 'Flying Cars',
-   'description': 'Zipping around the city, people fly in all shapes and sized cars.'},
-  {'name': 'Airships',
-   'description': 'Several airships coming and going from the airship dock.'}]}
-
-    encounters_list = \
-[{'probability': 0.2,
-  'description': 'You spot a group of street urchins stealing items off the flying cars',
-  'trigger': {'type': 'way', 'way': 'Flying Cars'},
-  'actions': [{'type': 'critter',
-    'description': 'Group of street urchins pilfering items off flying cars'}]},
- {'probability': 0.1,
-  'description': 'You see a crew of airship brigands attempting to hijack an airship',
-  'trigger': {'type': 'way', 'way': 'Airships'},
-  'actions': [{'type': 'character',
-    'name': 'Airship Brigands',
-    'description': 'A rowdy crew of airship hijackers'}]},
- {'probability': 0.2,
-  'description': 'Inside one of the steampunk-style buildings, you find a secret laboratory',
-  'trigger': {'type': 'building', 'building': 'Steampunk-style Buildings'},
-  'actions': [{'type': 'building',
-    'name': 'Secret Laboratory',
-    'description': 'A hidden laboratory full of strange contraptions and machinery'}]},
- {'probability': 0.1,
-  'description': 'A mysterious figure in a hooded cloak is seen entering one of the airships',
-  'trigger': {'type': 'way'}}]
-
-    print(initialize_location(location_dict, encounters_list))

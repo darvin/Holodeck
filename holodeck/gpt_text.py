@@ -1,5 +1,5 @@
 import os
-from ..helpers.gpt_text_decoding import detoml
+from helpers.gpt_text_decoding import detoml
 import yaml
 from .settings import style
 
