@@ -64,10 +64,10 @@ def initialize_location(location_dict, encounters_list):
 
     def get_or_create_building_by_name(building_name):
         for building in location.all_buildings:
-            if building.name.lower() == building_name.lower():
+            if building.name and building.name.lower() == building_name.lower():
                 #no need to add building cause it may be built on the location per trigger
                 return building
-        return Building(building_name, f"<a description of building {building_name}>")
+        return Building(building_name, f"<a description of building {building_name}>", False)
 
     for encounter_dict in encounters_list:
         if not encounter_dict.get('trigger') or \
@@ -95,7 +95,7 @@ def initialize_location(location_dict, encounters_list):
         actions = []
         for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type'].strip()
-            if action_type in ['character', 'ship', 'vessel', 'characters']:
+            if action_type in ['character', 'ship', 'vessel', 'characters', 'robot']:
                 action_obj = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
             elif action_type == 'item':
                 action_obj = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])

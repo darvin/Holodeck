@@ -21,6 +21,7 @@ async def generate_image_holoimage(prompt, negative_prompt):
         print("Exception when calling DefaultApi->route_generate_image_image_get: %s\n" % e)
 
 async def generate_image_huggingface(prompt):
+    # API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
     API_URL = "https://api-inference.huggingface.co/models/Envvi/Inkpunk-Diffusion"
     api_token = os.environ.get('HUGGINGFACE_API_KEY')
 

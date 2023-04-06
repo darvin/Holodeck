@@ -159,40 +159,68 @@ make sure that every building, way and location have unique 'name' and 'descript
 """)
 
 
-image_sample1 = {
-    'prompt':"(long shot) of a (man:1.8) wearing an (astronaut suit:1.4) standing on the surface of a planet with a (red sun) in the sky in the middle of a storm, .",
-    'negative_prompt':"Scribbles,Low quality,Low rated,Mediocre,3D rendering,Screenshot,Software,UI,((watermark)),(text),(overlay),getty images,(cropped),low quality,worst quality"
+
+prompt_image_sample = {
+    'prompt':"prompt goes here",
+    'negative_prompt':"negative_prompt goes ehere"
 }
 
-image_sample2 = {
-    'prompt':"(upper body portrait) of a beautiful (green-eyed) (brunette:1.4) (woman:1.4) wearing an (astronaut suit) and (cowboy hat) looking at the camera, background is the surface of a planet with a (red sun) in the sky [in the middle of a storm], spacecowboy, masterpiece, realistic, high resolution, very detailed",
-    'negative_prompt':"helmet, Scribbles, Low quality, Low rated,Mediocre,3D rendering, Screenshot, Software, UI,((watermark)),(text),(overlay), getty images,(cropped),low quality, worst quality"
-}
-
+# style = "mdjrny-v4 style"
+style = "nvinkpunk"
 prompt_image_intro = f"""
-Act as Stable Diffusion prompt generator. 
-
-if user says: "astranaut on mars", respond with following correct toml, without any explanations:
-{toml.dumps(image_sample1)}
+Act as a prompt generator for Diffusion Image Generator. User will supply you with subject: a detailed description of the subject of the image. use only features that are visible!
 
 
-if user says "woman space cowboy", respond with following TOML:
-{toml.dumps(image_sample2)}
+you will respond with TOML in following format:
 
-use (words:emphasis_modifier) to change the emphasis. (range is  0.1 to 1.9)
-Maximum allowed length of the prompt is 50 tokens. if after generation of the positive prompt there is still place left, fill it with positive adjectives like "intricate" and "high resolution"
+```
+{toml.dumps(prompt_image_sample)}
+```
 
-Add things that shouldn't be on the picture, things that picture may be confused with but shouldn't to negative_prompt.
+you MUST respond in TOML format!
+
+use following algorithm to construct prompt:
+
+1. first, clearly state what kind of shot is that
+2. then name a main subject of the photo
+3. describe subject and its features:
+  a. start with features that are present on the subject: its appearance, items on it, its visible attributes
+  b. continue to the immediate enviroment - only ever mention things that should be visible in the frame!
+  c. if you mention thing that are bigger than subject [take it in square brackets]
+4. mention lighting conditions
+5. determine styles/genres that should be associated with subject, list them comma separated
+6. add "{style}" in the end
+
+{style} MUST be present in prompt! prompt should be structured like this one:
+
+"Full face shot of woman with bright red eyes, holding a laser saber, standing in the [hull of spaceship], in light of pink sunset, {style}"
+
+maximum length of the prompt is just 20 words! be concise, skip unnecessary for imagining picture words.
+
+use following algorithm to construct negative_prompt:
+
+1. determine all things that subject might be confused with which are not subject. list them, comma separated, then append 'x'
+2. determine all other styles/genres that could be associated with subject, but shouldn't, because they are not appropriate to described setting. list them, comma separated, then append 'x'.
+3. add "bad quality", "sketch" and other words associated with bad pictures until the length of the negative prompt is 55 tokens
+
+dont use verbs like "capture", "avoid" in either prompt or negative prompt, just describe what should be on the picture and what shouldn't
+
+
 """
 
 prompt_image_building = PromptTemplate(
     input_variables=["building", "location"],
     template= prompt_image_intro +"""
 
+if subject is buidilng located on the ground, then its aerial shot. if its indoors location - then its indoors shot. other case - your best judgement.
 
-output prompt for the following building: {building}
+location of subject is {location}
 
-located in place with following description: "{location}"
+
+
+first input is:
+
+"{building}"
 
 
 """,
@@ -203,52 +231,38 @@ prompt_image_object = PromptTemplate(
     input_variables=["object", "location"],
     template= prompt_image_intro + """
     
-you are only allowed to mention one or two nouns in the prompt!
+    
+only use LOCATION for style hints! don't describe the LOCATION, describe SUBJECT!
 
-focus attention on object, not surroundings: only use description of location of the object for hints about small details you could add into the picture. Do not describe location! Describe object. Avoid placing anything not related to the object into prompt!
 
-place lower ephasis on surroundings, higher on the object itself.
+- if subject has face, then its full face portrait
+  - if face is visible and its human, add celebrity names of proper gender to prompt like that [Taylor Swift]
+- if subject is bigger than a human - telephoto long distnace shot
+- if subject smaller than human - macro shot
 
-If object is a human or humanoid character, add "face-focused" to prompt.
+start prompt with camera directions! determine the best
+location of subject is {location}
 
-if object is human, add celebrity names, like [[taylor swift]]
 
-If object is a living creature, make sure that prompt is not "back view": it should be full body view for non humanoids and portrait for humans/humanoids!
+first input is:
 
-follow following formula:
+"{object}"
 
-1. Name object
-2. Name all alternative names of the object
-3. Describe object's appearance (avoid description of the sounds it makes)
-4. If neccessary for stylization, briefly mention the background of object
-
-Do not ever mention objects that is not object that is being described in prompt!
-
-output prompt for the following object: {object}
-located in place with following description: "{location}"
 """)
 
 
 prompt_image_location = PromptTemplate(
     input_variables=["location", "buildings"],
     template=prompt_image_intro + """
- must be included in prompt! 
 
-use user's prompt as an inspiration to create the best 
-possible prompt to draw a a highly detailed, playable in a game with top down view 
-description of one square mile location. make sure that prompt that you create does NOT includes 
-adventurers or any other characters not referred directly in user's prompt
+this must be aerial shot if its located on the ground, or any shot that makes more sense - if not.
+  
+first input is:
 
-be extremely concise! focus on the extra features, such as buildings. maximum allowed length of prompt is 77 tokens.
-
-prompt must include "Bird eye view"/"Aerial photography"!
-
-first user's prompt is:
-
+"a location one square mile, described as following:
 {location}
-
-following buildings are present on this location:
-{buildings}
+following is present on this location:
+{buildings}"
 
 
 """)

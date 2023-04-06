@@ -38,8 +38,12 @@ class Location(SQLModel, table=True):
         objects = []
         for encounter in self.encounters:
             for action in encounter.actions:
-                if isinstance(action, Item) or isinstance(action, Critter) or isinstance(action, Character):
-                    objects.append(action)
+                if action.character:
+                    objects.append(action.character)
+                if action.item:
+                    objects.append(action.item)
+                if action.critter:
+                    objects.append(action.critter)
         return objects
 
     @property
@@ -49,8 +53,8 @@ class Location(SQLModel, table=True):
             all_buildings.append(building)
         for encounter in self.encounters:
             for action in encounter.actions:
-                if isinstance(action, Building):
-                    all_buildings.append(action)
+                if action.building:
+                    all_buildings.append(action.building)
         return all_buildings
     
 
