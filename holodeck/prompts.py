@@ -191,6 +191,8 @@ use following algorithm to construct prompt:
 5. determine styles/genres that should be associated with subject, list them comma separated
 6. add "{style}" in the end
 
+Don't mention objects that should not be on the image: for example, if it's close up on the small items, you are forbidden to mention enviroment where they are found: instead use adjectives to pass the mood/style/genre.
+
 {style} MUST be present in prompt! prompt should be structured like this one:
 
 "Full face shot of woman with bright red eyes, holding a laser saber, standing in the [hull of spaceship], in light of pink sunset, {style}"
@@ -235,8 +237,8 @@ prompt_image_object = PromptTemplate(
 only use LOCATION for style hints! don't describe the LOCATION, describe SUBJECT!
 
 
-- if subject has face, then its full face portrait
-  - if face is visible and its human, add celebrity names of proper gender to prompt like that [Taylor Swift]
+- if subject is human or humanoid, then its full face portrait, never Telephoto shot or back side photo!
+  - if face is visible and its human, add celebrity names of proper gender to prompt in square brackets
 - if subject is bigger than a human - telephoto long distnace shot
 - if subject smaller than human - macro shot
 

@@ -32,6 +32,8 @@ async def generate_image_huggingface(prompt):
         return response.content
     image_bytes = query({
         "inputs": prompt,
+        "wait_for_model":True,
+        
     })
     return io.BytesIO(image_bytes)
 
