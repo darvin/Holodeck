@@ -11,12 +11,12 @@ class Location(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: str
-    buildings: List["Building"] = Relationship(back_populates="location")
-    ways: List["Way"] = Relationship(back_populates="location")
-    encounters: List["Encounter"] = Relationship(back_populates="location")
-    characters: List["Character"] = Relationship(back_populates="location")
+    buildings: List["Building"] = Relationship()
+    ways: List["Way"] = Relationship()
+    encounters: List["Encounter"] = Relationship()
+    characters: List["Character"] = Relationship()
 
-    def __init__(self, name, description):
+    def __init__(self, name:str, description:str):
         self.name = name
         self.description = description
 
@@ -55,14 +55,14 @@ class Location(SQLModel, table=True):
                     all_buildings.append(action)
         return all_buildings
     
+
 class Way(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: str
     location_id: int = Field(foreign_key="location.id")
-    location: Optional[Location] = Relationship(back_populates="ways")
 
-    def __init__(self, name, description):
+    def __init__(self, name:str, description:str):
         self.name = name
         self.description = description
         
@@ -74,11 +74,10 @@ class Building(SQLModel, table=True):
     name: str
     description: str
     enterable: bool
-    location_id: int = Field(foreign_key="location.id")
-    location: Optional[Location] = Relationship(back_populates="buildings")
+    location_id: Optional[int] = Field(foreign_key="location.id")
 
 
-    def __init__(self, name, description, enterable):
+    def __init__(self, name:str, description:str, enterable:bool):
         self.name = name
         self.description = description
         self.enterable = enterable
@@ -92,17 +91,93 @@ class Item(SQLModel, table=True):
     name: str
     description: str
 
-    def __init__(self, name, description):
+    def __init__(self, name:str, description:str):
         self.name = name
         self.description = description
+
+
+
+class Character(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    location_id: Optional[int] = Field(foreign_key="location.id", default=None)
+
+
+    def __init__(self, name:str, description:str):
+        self.name = name
+        self.description = description
+
+    def __str__(self):
+        return f"{self.name}: {self.description}"
+
+class Critter(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+
+    def __init__(self, name:str, description:str):
+        self.name = name
+        self.description = description
+
+    def __str__(self):
+        return f"{self.name}: {self.description}"
+    
+class Trigger(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    type: TriggerType
+    way_id: Optional[int] = Field(foreign_key="way.id")
+    way: Optional[Way] = Relationship()
+    building_id: Optional[int] = Field(foreign_key="building.id")
+    building: Optional[Building] = Relationship()
+    encounter_id: int = Field(foreign_key="encounter.id")
+
+
+
+    def __init__(self, type:TriggerType, way:Optional[Way]=None, building:Optional[Building]=None):
+        self.type = type
+        self.way = way
+        self.building = building
+
+    def __str__(self):
+        trigger_str = f"{self.type_.name}: "
+        for key, value in self.__dict__.items():
+            if key != "type_":
+                trigger_str += f"{key}={value}, "
+        trigger_str = trigger_str.rstrip(", ")
+        return trigger_str
+
+
+class Encounter(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    probability: float
+    description: str
+    actions: List['Action'] = Relationship()
+    location_id: int = Field(foreign_key="location.id")
+    triggers: List['Trigger'] = Relationship()
+
+
+
+    def __init__(self, probability: float, description: str, triggers: List['Trigger'], actions: List['Action']):
+        self.probability = probability
+        self.description = description
+        self.triggers = triggers
+        self.actions = actions
+
+    def __str__(self):
+        if self.triggers:
+            trigger = self.triggers[0]
+            trigger_str = f"{trigger.type.name}: {trigger.way}" if trigger.way else f"{trigger.type.name}: {trigger.building}"
+        else:
+            trigger_str = ""
+        action_str = "\n".join([f"  {action}" for action in self.actions])
+        return f"Encounter ({self.probability * 100}%): {self.description}\nTrigger: {trigger_str}\nActions:\n{action_str}"
 
 class Action(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     type: str
-  
-    encounter_id: int = Field(foreign_key="encounter.id")
-    encounter: Optional['Encounter'] = Relationship(back_populates="actions")
 
+    encounter_id: int = Field(foreign_key="encounter.id")
 
     critter_id: Optional[int] = Field(foreign_key="critter.id")
     critter: Optional['Critter'] = Relationship()
@@ -114,7 +189,9 @@ class Action(SQLModel, table=True):
     building: Optional['Building'] = Relationship()
 
 
-    def __init__(self, type, obj=None, building=None, item=None, critter=None, character=None):
+    def __init__(self, type:str, obj=None, building:Optional[Building]=None, \
+                 item:Optional[Item]=None, critter:Optional['Critter']=None, \
+                    character:Optional['Character']=None):
         self.type = type
 
         if building is not None:
@@ -150,84 +227,3 @@ class Action(SQLModel, table=True):
         if self.character:
             components.append(f"character={self.character}")
         return ", ".join(components)
-
-
-
-class Encounter(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    probability: float
-    description: str
-    actions: List[Action] = Relationship(back_populates="encounter")
-    location_id: int = Field(foreign_key="location.id")
-    location: Optional[Location] = Relationship(back_populates="encounters")
-    triggers: List['Trigger'] = Relationship(back_populates="encounter")
-
-
-
-    def __init__(self, probability, description, trigger, actions):
-        self.probability = probability
-        self.description = description
-        self.triggers = [trigger]
-        self.actions = actions
-
-    def __str__(self):
-        if self.triggers:
-            trigger = self.triggers[0]
-            trigger_str = f"{trigger.type.name}: {trigger.way}" if trigger.way else f"{trigger.type.name}: {trigger.building}"
-        else:
-            trigger_str = ""
-        action_str = "\n".join([f"  {action}" for action in self.actions])
-        return f"Encounter ({self.probability * 100}%): {self.description}\nTrigger: {trigger_str}\nActions:\n{action_str}"
-
-class Character(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    description: str
-    location_id: Optional[int] = Field(foreign_key="location.id", default=None)
-    location: Optional[Location] = Relationship(back_populates="characters")
-
-
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-    def __str__(self):
-        return f"{self.name}: {self.description}"
-
-class Critter(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    description: str
-
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-    def __str__(self):
-        return f"{self.name}: {self.description}"
-    
-class Trigger(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    type: TriggerType
-    way_id: Optional[int] = Field(foreign_key="way.id")
-    way: Optional[Way] = Relationship()
-    building_id: Optional[int] = Field(foreign_key="building.id")
-    building: Optional[Building] = Relationship()
-    encounter_id: int = Field(foreign_key="encounter.id")
-    encounter: Optional['Encounter'] = Relationship(back_populates="triggers")
-
-
-
-    def __init__(self, type, way=None, building=None):
-        self.type = type
-        self.way = way
-        self.building = building
-
-    def __str__(self):
-        trigger_str = f"{self.type_.name}: "
-        for key, value in self.__dict__.items():
-            if key != "type_":
-                trigger_str += f"{key}={value}, "
-        trigger_str = trigger_str.rstrip(", ")
-        return trigger_str
-

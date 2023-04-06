@@ -63,18 +63,21 @@ def initialize_location(location_dict, encounters_list):
         probability = encounter_dict['probability']
         description = encounter_dict['description']
 
-        trigger_dict = {}
+        triggers_dicts = []
         if isinstance(encounter_dict['trigger'] , list):
-            trigger_dict = encounter_dict['trigger'][0]
+            triggers_dicts = encounter_dict['trigger']
         else:
-            trigger_dict = encounter_dict['trigger']
-
-        trigger_type = trigger_dict['type']
-        trigger = None
-        if trigger_type.upper() == TriggerType.WAY.name:
-            trigger = Trigger(TriggerType.WAY, way=trigger_dict.get('way'))
-        elif trigger_type.upper() == TriggerType.BUILDING.name:
-            trigger = Trigger(TriggerType.BUILDING, building=trigger_dict.get('building'))
+            triggers_dicts = [encounter_dict['trigger']]
+        triggers = []
+        for trigger_dict in triggers_dicts:
+            trigger_type = trigger_dict['type']
+            trigger = None
+            if trigger_type.upper() == TriggerType.WAY.name:
+                trigger = Trigger(TriggerType.WAY, way=trigger_dict.get('way'))
+            elif trigger_type.upper() == TriggerType.BUILDING.name:
+                trigger = Trigger(TriggerType.BUILDING, building=trigger_dict.get('building'))
+            if trigger:
+                triggers.append(trigger)
         actions = []
         for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type'].strip()
@@ -89,7 +92,7 @@ def initialize_location(location_dict, encounters_list):
             else:
                 print(f"unknown type! {action_type}")
             actions.append(Action(action_type, action_obj))
-        encounter = Encounter(probability, description, trigger, actions)
+        encounter = Encounter(probability, description, triggers, actions)
         location.add_encounter(encounter)
     return location
 
