@@ -19,12 +19,15 @@ class Location(SQLModel, table=True):
         self.description = description
 
     def add_encounter(self, encounter):
+        encounter.location_id = self.id
         self.encounters.append(encounter)
 
     def add_building(self, building):
+        building.location_id = self.id
         self.buildings.append(building)
 
     def add_way(self, way):
+        way.location_id = self.id
         self.ways.append(way)
 
     def __str__(self):
@@ -88,6 +91,8 @@ class Building(SQLModel, table=True):
         enter_str = "Enterable" if self.enterable else "Not enterable"
         return f"{self.name}: {self.description} ({enter_str})"
 
+
+#this is not actual item that character might have, but archetype
 class Item(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str

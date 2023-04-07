@@ -97,7 +97,7 @@ you must respond with a toml containing all possible random encounters, for exam
 {sample_encounters}
 ```
 
-make sure that every way, critter, character, building and item have unique 'name' and 'description'!
+make sure that every way, critter, character, building and item have unique 'name' AND 'description'! add at least 1 critter and 1 character!
 
 first user's input: 
 
@@ -166,105 +166,104 @@ prompt_image_sample = {
 }
 
 # style = "mdjrny-v4 style"
-style = "nvinkpunk"
+# style = "nvinkpunk"
 prompt_image_intro = f"""
-Act as a prompt generator for Diffusion Image Generator. User will supply you with subject: a detailed description of the subject of the image. use only features that are visible!
-
-
-you will respond with TOML in following format:
-
-```
-{toml.dumps(prompt_image_sample)}
-```
-
-you MUST respond in TOML format!
-
-use following algorithm to construct prompt:
-
-1. first, clearly state what kind of shot is that
-2. then name a main subject of the photo
-3. describe subject and its features:
-  a. start with features that are present on the subject: its appearance, items on it, its visible attributes
-  b. continue to the immediate enviroment - only ever mention things that should be visible in the frame!
-  c. if you mention thing that are bigger than subject [take it in square brackets]
-4. mention lighting conditions
-5. determine styles/genres that should be associated with subject, list them comma separated
-6. add "{style}" in the end
-
-Don't mention objects that should not be on the image: for example, if it's close up on the small items, you are forbidden to mention enviroment where they are found: instead use adjectives to pass the mood/style/genre.
-
-{style} MUST be present in prompt! prompt should be structured like this one:
-
-"Full face shot of woman with bright red eyes, holding a laser saber, standing in the [hull of spaceship], in light of pink sunset, {style}"
-
-maximum length of the prompt is just 20 words! be concise, skip unnecessary for imagining picture words.
-
-use following algorithm to construct negative_prompt:
-
-1. determine all things that subject might be confused with which are not subject. list them, comma separated, then append 'x'
-2. determine all other styles/genres that could be associated with subject, but shouldn't, because they are not appropriate to described setting. list them, comma separated, then append 'x'.
-3. add "bad quality", "sketch" and other words associated with bad pictures until the length of the negative prompt is 55 tokens
-
-dont use verbs like "capture", "avoid" in either prompt or negative prompt, just describe what should be on the picture and what shouldn't
-
-
+you must describe the object to a blind artist! describe the object, be extremly concise: omit words not neccessary for visual description. amount of words is limited to amount similiar to the sample. describe only what is visible, style guidance and camera directions, strictly following following samples:
 """
 
 prompt_image_building = PromptTemplate(
     input_variables=["building", "location"],
     template= prompt_image_intro +"""
+A futuristic laboratory with glowing screens, robotic arms, and sparking electricity. sci-fi, cyberpunk, (first-person view)
+A spooky haunted house with creaky floorboards, dusty cobwebs, and flickering candles. horror, spooky, (first-person view)
+    
+ <description of location>, <detail1>, <detail2>, <style direction>, (<appropriate camera direction>)
 
-if subject is buidilng located on the ground, then its aerial shot. if its indoors location - then its indoors shot. other case - your best judgement.
 
-location of subject is {location}
+the building is located at {location}. describe the building, not location!
 
-
-
-first input is:
 
 "{building}"
 
-
+your description in given format:
 """,
 )
 
 
-prompt_image_object = PromptTemplate(
-    input_variables=["object", "location"],
+prompt_image_character = PromptTemplate(
+    input_variables=["character", "location"],
     template= prompt_image_intro + """
+portrait of fierce dark-skinned male pirate, black bandana, bushy beard, brown eyes, sword-wielding, adventure, (tropical island with a shipwreck in the background:1.9)
+
+portrait of quirky light-skinned female scientist, thick-rimmed glasses, frizzy hair, excited brown eyes, conducting experiments, science, futuristic laboratory with advanced equipment in the background
+
+portrait of <description of character>, <what's on the head>, <face features>, <eyes>, <words that associated with character appearance, comma separated>, <environment> on background, 
+
+
     
+location of character is {location}
+
+"{character}"
+
+your description in given format:
+""")
+
+
+prompt_image_item = PromptTemplate(
+    input_variables=["item", "location"],
+    template= prompt_image_intro + """
+close-up of a worn leather bag, with a gleaming revolver and a jangling stack of gold coins spilling out, dangerous and alluring, (dingy saloon with shadowy figures in the background:1.9)
+
+image of a polished silver pocket watch, with intricate clockwork and a gleaming chain, (Victorian-era mansion with flickering candlelight and antique furniture:1.9)
+
+<camera direction> of <description of item>, <detail1>, <detail2>, <style direction> (<environment>:1.9)
+
     
-only use LOCATION for style hints! don't describe the LOCATION, describe SUBJECT!
+location where item is found - {location}. use it only for styling hints! don't mention it and choose any appropiate background for item
 
 
-- if subject is human or humanoid, then its full face portrait, never Telephoto shot or back side photo!
-  - if face is visible and its human, add celebrity names of proper gender to prompt in square brackets
-- if subject is bigger than a human - telephoto long distnace shot
-- if subject smaller than human - macro shot
+"{item}"
 
-start prompt with camera directions! determine the best
-location of subject is {location}
+your description in given format:
+""")
+
+prompt_image_critter = PromptTemplate(
+    input_variables=["critter", "location"],
+    template= prompt_image_intro + """
+tracking shot of the monstrous Kraken, with massive tentacles emerging from the depths of the ocean, terrorizing a ship, mythological, (stormy ocean with a lighthouse in the background:1.9)
+
+aerial shot of the majestic white unicorn, with shimmering horn and rainbow mane, galloping through a meadow, magical, (enchanted forest with fairy lights in the background:1.9)
+
+overhead shot of the mystical phoenix, with fiery wings spreading wide, feathers glowing in the sunlight, reborn from its ashes, legendary, (ancient temple ruins in the background:1.9)
+
+<appropriate camera direction> of <description of creature>, <detail1>, <detail2>, (<environment>:1.9)
 
 
-first input is:
+    
+location where creature is found - {location}. use it only for styling hints! don't mention it and choose any appropiate background for item
 
-"{object}"
 
+"{critter}"
+
+your description in given format:
 """)
 
 
 prompt_image_location = PromptTemplate(
     input_variables=["location", "buildings"],
     template=prompt_image_intro + """
+A steampunk airship with propellers, smokestacks, and gleaming brass. victorian, brass, (aerial view)
+A sprawling cyberpunk city with neon signs, holographic billboards, and towering skyscrapers. futuristic, sci-fi, (panoramic view)
 
-this must be aerial shot if its located on the ground, or any shot that makes more sense - if not.
-  
-first input is:
+ <description of location>, <detail1>, <detail2>, <style direction>, (<appropriate camera direction>)
+
+
 
 "a location one square mile, described as following:
 {location}
 following is present on this location:
 {buildings}"
+you need to describe whole location, do not focus on buildings!
 
-
+your description in given format:
 """)

@@ -3,7 +3,7 @@ import random
 import base64
 import uuid
 import base64
-from .game_objects import Location, \
+from .models.game_objects import Location, \
                         Building, \
                         Way, \
                         Character, \
@@ -56,13 +56,17 @@ def initialize_location(location_dict, encounters_list):
             pass # fixme. happens when GPT returns 'way: Name of Way' - one liner :(
 
     def get_or_create_way_by_name(way_name):
+        if not way_name:
+            return None
         for way in location.ways:
-            if way.name.lower() == way_name.lower():
+            if way.name and  way.name.lower() == way_name.lower():
                 location.add_way(way)
                 return way
         return Way(way_name, f"<a description of way {way_name}>")
 
     def get_or_create_building_by_name(building_name):
+        if not building_name:
+            return None
         for building in location.all_buildings:
             if building.name and building.name.lower() == building_name.lower():
                 #no need to add building cause it may be built on the location per trigger
@@ -86,9 +90,10 @@ def initialize_location(location_dict, encounters_list):
         for trigger_dict in triggers_dicts:
             trigger_type = trigger_dict['type']
             trigger = None
-            if trigger_type.upper() == TriggerType.WAY.name:
+            if trigger_type.upper
+            () == TriggerType.WAY.name and trigger_dict.get('way'):
                 trigger = Trigger(TriggerType.WAY, way=get_or_create_way_by_name(trigger_dict.get('way')))
-            elif trigger_type.upper() == TriggerType.BUILDING.name:
+            elif trigger_type.upper() == TriggerType.BUILDING.name and trigger_dict.get('building'):
                 trigger = Trigger(TriggerType.BUILDING, building=get_or_create_building_by_name(trigger_dict.get('building')))
             if trigger:
                 triggers.append(trigger)

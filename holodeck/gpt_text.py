@@ -1,9 +1,9 @@
 import os
 from helpers.gpt_text_decoding import detoml
 import yaml
-from .settings import style
+from .settings import styles
 
-
+style = styles[0]
 
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
@@ -44,7 +44,9 @@ chain_location = LLMChain(llm=llm, prompt=prompt_location)
 chain_encounters = LLMChain(llm=llm, prompt=prompt_encounters)
 chain_image_building = LLMChain(llm=llm, prompt=prompt_image_building)
 chain_image_location = LLMChain(llm=llm, prompt=prompt_image_location)
-chain_image_object = LLMChain(llm=llm, prompt=prompt_image_object)
+chain_image_item = LLMChain(llm=llm, prompt=prompt_image_item)
+chain_image_critter = LLMChain(llm=llm, prompt=prompt_image_critter)
+chain_image_character = LLMChain(llm=llm, prompt=prompt_image_character)
 
 
 
@@ -64,16 +66,14 @@ def generate_location_and_encounters(prompt):
     return (location, encounters or [])
 
 
-def image_prompt_process(response):
-    decoded = detoml(response)
-    if 'prompt' not in decoded or 'negative_prompt' not in decoded:
-        print(f"Error decoding >{response['text']}<: prompt and negative_prompt are not found")
-        raise Exception
+from itertools import cycle
+style_cycle = cycle(styles)
 
-    # prefix = "(Digital Artwork:1.3) of (Technical illustration:1) nvinkpunk, " 
-    prefix = ""
-    decoded['prompt'] = prefix + decoded['prompt'] 
-    return decoded
+
+def image_prompt_process(response):
+    return f"{response['text']} {next(style_cycle)}"
+
+
 
 
 @retry(3)
@@ -93,12 +93,30 @@ def generate_building_image_prompt(building, location):
     }))
 
 @retry(3)
-def generate_object_image_prompt(object, location):
-    return image_prompt_process(chain_image_object({
+def generate_item_image_prompt(object, location):
+    return image_prompt_process(chain_image_item({
         'location':location.description,
-        'object':f"{object.name}: {object.description}",
+        'item':f"{object.name}: {object.description}",
         'style':style,
     }))
+
+@retry(3)
+def generate_character_image_prompt(object, location):
+    return image_prompt_process(chain_image_character({
+        'location':location.description,
+        'character':f"{object.name}: {object.description}",
+        'style':style,
+    }))
+
+
+@retry(3)
+def generate_critter_image_prompt(object, location):
+    return image_prompt_process(chain_image_critter({
+        'location':location.description,
+        'critter':f"{object.name}: {object.description}",
+        'style':style,
+    }))
+
 
 import traceback
 
