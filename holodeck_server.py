@@ -10,6 +10,7 @@ from holodeck.models.game_engine import *
 from holodeck.models.images import *
 # from sqlalchemy.orm import joinedload
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from holodeck.gpt_image import generate_image
 
 
 app = FastAPI()
@@ -101,9 +102,46 @@ from holodeck.gpt_text import \
         generate_building_image_prompt, \
         generate_location_image_prompt
 
+import PIL.Image as Image
+ 
+
+async def generate_image_from_model_and_save(image_model):
+    print(f">> requesting image for prompt: '{image_model.prompt}'<<<")
+    image_bytes = await generate_image(prompt=image_model.prompt)
+    print(">> received image!")
+    image = Image.open(image_bytes)
+    image_file_name = f".images/{image_model.id}.png"
+    image.save(image_file_name)
+    image.close()
+    image_bytes.close()
+    del image_bytes
+    return image_model
+
+import asyncio
+
+@app.post("/image/images")
+async def image_prompts_regenerate():
+    with Session(engine) as session:
+        images = session.exec(select(GameObjectImage)).all()
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            results = await asyncio.gather(*[
+                generate_image_from_model_and_save(image) 
+                for image in images
+            ])
+
+            images_generated = [r for r in results if r is not None]
+            with Session(engine) as session:
+                for image in images_generated:
+                    image.generated = True
+                    session.add(image)
+                session.commit()
+                for image in images_generated:
+                    session.refresh(image)
+                return(images_generated)
 
 
-@app.post("/image_prompts")
+@app.post("/image/prompts")
 async def image_prompts_regenerate():
     with Session(engine) as session:
 

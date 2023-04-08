@@ -4,7 +4,9 @@ import uuid as uuid_pkg
 
 
 
-class Image(SQLModel, table=True):
+class GameObjectImage(SQLModel, table=True):
+    __tablename__ = "image"
+
     id: Optional[int] = Field(default=None, primary_key=True)
 
     # id: uuid_pkg.UUID = Field(
@@ -15,3 +17,4 @@ class Image(SQLModel, table=True):
     # )
     prompt: str = Field()
     removed: bool = Field(default=False, nullable=True)
+    generated: bool = Field(default=False, nullable=True)

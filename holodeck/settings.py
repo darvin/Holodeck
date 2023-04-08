@@ -20,5 +20,6 @@ styles = [   #"hand drawn watercolor"
  "hd, vibrant color, high contrast, digital illustration",
  "hyperdetailed, cinematic lighting",
 ]
-img_gen_model = "stabilityai/stable-diffusion-2-1"
+img_gen_model = "runwayml/stable-diffusion-v1-5"
+#img_gen_model = "stabilityai/stable-diffusion-2-1"
 # img_gen_model = "prompthero/openjourney"
