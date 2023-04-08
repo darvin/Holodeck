@@ -58,7 +58,7 @@ def initialize_location(location_dict, encounters_list):
     def get_or_create_way_by_name(way_name):
         if not way_name:
             return None
-        for way in location.ways:
+        for way in location.ways_outgoing:
             if way.name and  way.name.lower() == way_name.lower():
                 location.add_way(way)
                 return way

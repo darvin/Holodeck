@@ -120,7 +120,7 @@ async def generate_image_from_model_and_save(image_model):
 import asyncio
 
 @app.post("/image/images")
-async def image_prompts_regenerate():
+async def image_images_regenerate():
     with Session(engine) as session:
         images = session.exec(select(GameObjectImage).where(GameObjectImage.generated==False)).all()
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
@@ -210,6 +210,17 @@ async def location(id):
         location = session.exec(select(Location).where(Location.id ==id)).all()[0]
         characters = session.exec(select(Character).where(Character.location_id ==id)).all()
         buildings = session.exec(select(Building).where(Building.location_id ==id)).all()
+        ways_outgoing = session.exec(select(Way).where(Way.from_location_id ==id)).all()
+
+        # for way in ways_outgoing:
+        #     if way.to_location == None:
+        #         way.to_location = generate_location(f"{way.name}: {way.description}. (this location is connected to {location.description})")
+        #         session.add(way.to_location)
+        #         session.add(way)
+        #         session.commit()
+        #         session.refresh(location)
+        #         await image_prompts_regenerate()
+        #         await image_images_regenerate()
 
         return {
             'location':location,
@@ -223,6 +234,13 @@ async def character(id):
     with Session(engine) as session:
 
         character = session.exec(select(Character).where(Character.id ==id)).all()[0]
+        if not character.location:
+            location = session.exec(select(Location).where(Location.id ==1)).all()[0]
+            character.location = location
+            session.add(character)
+            session.commit()
+            session.refresh(character)
+
 
         if not character.game_character:
             pass
@@ -236,6 +254,12 @@ async def character(id):
             'character':character,
             'items':items,
         }
+
+@app.post("/character/{id}/action")
+async def character(id):
+    with Session(engine) as session:
+        character = session.exec(select(Character).where(Character.id ==id)).all()[0]
+
 
 
 

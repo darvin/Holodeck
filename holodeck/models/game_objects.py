@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List, Optional
 from sqlmodel import SQLModel, Field, Relationship
 
+from sqlalchemy.orm import RelationshipProperty
 
 
 
@@ -10,7 +11,8 @@ class Location(SQLModel, table=True):
     name: str
     description: str
     buildings: List["Building"] = Relationship()
-    ways: List["Way"] = Relationship()
+    ways_outgoing: List["Way"] = Relationship()
+    # ways_incoming: List["Way"] = Relationship()
     encounters: List["Encounter"] = Relationship()
     characters: List["Character"] = Relationship()
 
@@ -31,12 +33,12 @@ class Location(SQLModel, table=True):
         self.buildings.append(building)
 
     def add_way(self, way):
-        way.location_id = self.id
-        self.ways.append(way)
+        way.from_location_id = self.id
+        self.ways_outgoing.append(way)
 
     def __str__(self):
         buildings_str = "\n  ".join([str(b) for b in self.buildings])
-        ways_str = "\n  ".join([str(w) for w in self.ways])
+        ways_str = "\n  ".join([str(w) for w in self.ways_outgoing])
         encounters_str = "\n  ".join([str(e) for e in self.encounters])
         return f"{self.name}\n{self.description}\n\nBuildings:\n  {buildings_str}\n\nWays:\n  {ways_str}\n\nEncounters:\n  {encounters_str}"
 
@@ -69,7 +71,10 @@ class Way(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: str
-    location_id: int = Field(foreign_key="location.id")
+    from_location_id: int = Field(foreign_key="location.id")
+    # to_location_id: int = Field(foreign_key="location.id")
+    from_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[from_location_id]))# , back_populates="ways_outgoing")
+    # to_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[to_location_id])) #, back_populates="ways_incoming")
 
     def __init__(self, name:str, description:str):
         self.name = name

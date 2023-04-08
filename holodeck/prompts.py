@@ -39,7 +39,7 @@ description = "As you enter jungles, you find a wallet lost by traveler"
 
   [[root.actions]]
   type = "item"
-  description = "Wallet full of gold"
+  description = "    of gold"
 
 [[root]]
 probability = 0.3
@@ -165,8 +165,6 @@ prompt_image_sample = {
     'negative_prompt':"negative_prompt goes ehere"
 }
 
-# style = "mdjrny-v4 style"
-# style = "nvinkpunk"
 prompt_image_intro = f"""
 you must describe the object to a blind artist! describe the object, be extremly concise: omit words not neccessary for visual description. amount of words is limited to amount similiar to the sample. describe only what is visible, style guidance and camera directions, strictly following following samples:
 """
