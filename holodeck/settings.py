@@ -6,6 +6,9 @@ env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path, verbose=True)
 
 
+
+openai_generation_temperature = 0.9
+
 # style = "nvinkpunk"
 #img_gen_model = "Envvi/Inkpunk-Diffusion"
 
@@ -26,10 +29,10 @@ styles = [   #"hand drawn watercolor"
 
 
 
+
 # # very fast
 styles = ["intricate, elegant, highly detailed, digital painting, artstation, concept art, smooth, sharp focus, illustration, art by otomo katsuhiro and hyung-tae kim and oshii mamoru",]
 img_gen_model = "runwayml/stable-diffusion-v1-5"
-
 
 location_prompts = [
     # "steampunk city with skyscrapers",
