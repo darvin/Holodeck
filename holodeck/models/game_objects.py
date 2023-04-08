@@ -14,6 +14,10 @@ class Location(SQLModel, table=True):
     encounters: List["Encounter"] = Relationship()
     characters: List["Character"] = Relationship()
 
+    image_id: Optional[int] = Field(foreign_key="image.id")
+    image: 'Image' = Relationship()
+
+
     def __init__(self, name:str, description:str):
         self.name = name
         self.description = description
@@ -80,6 +84,10 @@ class Building(SQLModel, table=True):
     description: str
     enterable: bool
     location_id: Optional[int] = Field(foreign_key="location.id")
+    location: 'Location' = Relationship(back_populates="buildings")
+
+    image_id: Optional[int] = Field(foreign_key="image.id")
+    image: 'Image' = Relationship()
 
 
     def __init__(self, name:str, description:str, enterable:bool):
@@ -109,10 +117,14 @@ class Character(SQLModel, table=True):
     name: str
     description: str
     location_id: Optional[int] = Field(foreign_key="location.id", default=None)
+    location: 'Location' = Relationship(back_populates="characters")
+
     game_items: List["GameItem"] = Relationship()
     game_character_id: Optional[int] = Field(foreign_key="gamecharacter.id")
     game_character: 'GameCharacter' = Relationship(back_populates="character")
 
+    image_id: Optional[int] = Field(foreign_key="image.id")
+    image: 'Image' = Relationship()
 
     def __init__(self, name:str, description:str):
         self.name = name
@@ -125,6 +137,10 @@ class Critter(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     description: str
+
+    image_id: Optional[int] = Field(foreign_key="image.id")
+    image: 'Image' = Relationship()
+
 
     def __init__(self, name:str, description:str):
         self.name = name

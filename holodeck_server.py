@@ -7,6 +7,7 @@ import os
 # from fastapi_sqlalchemy import DBSessionMiddleware, db
 from holodeck.models.game_objects import *
 from holodeck.models.game_engine import *
+from holodeck.models.images import *
 # from sqlalchemy.orm import joinedload
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
@@ -92,6 +93,75 @@ async def locations_regenerate():
         for location in locations:
             session.refresh(location)
         return(locations)
+
+
+
+from holodeck.gpt_text import \
+        generate_object_image_prompt, \
+        generate_building_image_prompt, \
+        generate_location_image_prompt
+
+
+
+@app.post("/image_prompts")
+async def image_prompts_regenerate():
+    with Session(engine) as session:
+
+        locations = session.exec(select(Location)).all()
+        characters = session.exec(select(Character)).all()
+        buildings = session.exec(select(Building)).all()
+
+        locations_image_prompts = []
+        objects_image_prompts = []
+        buildings_image_prompts = []
+
+        def generate_location_images(location):
+            return [(location, generate_location_image_prompt(location))]
+
+        def generate_object_images(location):
+            prompts = []
+            for o in location.objects:
+                prompts.append((o, generate_object_image_prompt(o, location)))
+            return prompts
+
+        def generate_building_images(location):
+            prompts = []
+            for b in location.all_buildings:
+                prompts.append((b, generate_building_image_prompt(b, location)))
+            return prompts
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            location_image_futures = [executor.submit(generate_location_images, location) for location in locations if location.image == None]
+            object_image_futures = [executor.submit(generate_object_images, character.location) for character in characters if character.location and character.image == None]
+            building_image_futures = [executor.submit(generate_building_images, building.location) for building in buildings  if building.location and building.image == None]
+
+            for f in location_image_futures:
+                for prompt in f.result():
+                    locations_image_prompts.append(prompt)
+            for f in object_image_futures:
+                for prompt in f.result():
+                    objects_image_prompts.append(prompt)
+            for f in building_image_futures:
+                for prompt in f.result():
+                    buildings_image_prompts.append(prompt)
+
+
+        img_prompts = locations_image_prompts + objects_image_prompts + buildings_image_prompts
+
+        result = []
+        for obj, prompt_txt in img_prompts:
+            img = Image()
+            img.prompt = prompt_txt
+            obj.image = img
+            session.add(obj)
+            session.add(img)
+            result.append((obj,img))
+        session.commit()
+        for obj, img in result:
+            session.refresh(obj)
+            session.refresh(img)
+        return result
+
 
 
 
