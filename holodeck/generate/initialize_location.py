@@ -3,7 +3,7 @@ import random
 import base64
 import uuid
 import base64
-from .models import Location, \
+from ..models import Location, \
                         Building, \
                         Way, \
                         Character, \
@@ -12,17 +12,19 @@ from .models import Location, \
                         Encounter, \
                         Action
 
-def generate_short_uuid():
-    uuid_bytes = uuid.uuid4().bytes_le
-    short_uuid_bytes = base64.urlsafe_b64encode(uuid_bytes)[:6]
-    short_uuid = short_uuid_bytes.decode('utf-8')
-    return short_uuid
 
-def get_randomized_id():
-    return generate_short_uuid()
 
 
 def initialize_location(location_dict, encounters_list):
+
+    def generate_short_uuid():
+        uuid_bytes = uuid.uuid4().bytes_le
+        short_uuid_bytes = base64.urlsafe_b64encode(uuid_bytes)[:6]
+        short_uuid = short_uuid_bytes.decode('utf-8')
+        return short_uuid
+
+    def get_randomized_id():
+        return generate_short_uuid()
     def get_location_number():
         return get_randomized_id()
 

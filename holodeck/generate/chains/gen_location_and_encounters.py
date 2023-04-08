@@ -1,9 +1,10 @@
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from helpers.gpt_text_decoding import detoml
-from ...helpers import retry
+from ...helpers.retry import retry
 
 
+from ...settings import openai_generation_temperature
 
 from langchain.prompts import PromptTemplate
 import toml
@@ -167,7 +168,7 @@ make sure that every building, way and location have unique 'name' and 'descript
 
 
 
-def gen_location_and_encounters(prompt, llm=OpenAI(temperature=0.9)):
+def gen_location_and_encounters(prompt, llm=OpenAI(temperature=openai_generation_temperature)):
     chain_location = LLMChain(llm=llm, prompt=prompt_location)
     chain_encounters = LLMChain(llm=llm, prompt=prompt_encounters)
 

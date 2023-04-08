@@ -3,7 +3,7 @@ from typing import List, Optional
 import uuid as uuid_pkg
 import PIL.Image as Image
 
-from ..gpt_image import generate_image
+from ..generate.generate_image import generate_image
 
 
 

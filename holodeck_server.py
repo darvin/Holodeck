@@ -8,7 +8,7 @@ import os
 from holodeck.models import *
 # from sqlalchemy.orm import joinedload
 from sqlmodel import Field, Session, SQLModel, create_engine, select
-from holodeck.gpt_image import generate_image
+from holodeck.generate.generate_image import generate_image
 
 
 app = FastAPI()
@@ -43,8 +43,8 @@ async def locations():
         return locations
 
 
-from holodeck.gpt_game_gen import initialize_location
-from holodeck.gpt_text import generate_location_and_encounters
+from holodeck.generate.initialize_location import initialize_location
+from holodeck.generate.gpt_text import generate_location_and_encounters
 
 import traceback
 
@@ -85,7 +85,7 @@ async def locations_regenerate():
 
 
 
-from holodeck.gpt_text import \
+from holodeck.generate.gpt_text import \
         generate_object_image_prompt, \
         generate_building_image_prompt, \
         generate_location_image_prompt

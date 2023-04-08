@@ -1,7 +1,7 @@
 
 
 from sqlmodel import SQLModel, create_engine
-from ..gpt_game_gen import initialize_location
+from ..generate.initialize_location import initialize_location
 
 from ..models import TriggerType
 

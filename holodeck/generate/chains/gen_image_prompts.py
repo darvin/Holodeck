@@ -1,9 +1,9 @@
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from helpers.gpt_text_decoding import detoml
-from ...helpers import retry
+from ...helpers.retry import retry
 
-import ...settings
+from ...settings import openai_generation_temperature, styles
 
 from langchain.prompts import PromptTemplate
 import toml
@@ -129,7 +129,7 @@ def image_prompt_process(response):
 
 
 @retry(3)
-def gen_location_image_prompt(location, llm=OpenAI(temperature=settings.openai_generation_temperature)):
+def gen_location_image_prompt(location, llm=OpenAI(temperature=openai_generation_temperature)):
     chain_image_location = LLMChain(llm=llm, prompt=prompt_image_location)
 
     return image_prompt_process(chain_image_location({
@@ -139,7 +139,7 @@ def gen_location_image_prompt(location, llm=OpenAI(temperature=settings.openai_g
     }))
 
 @retry(3)
-def gen_building_image_prompt(building, location, llm=OpenAI(temperature=settings.openai_generation_temperature)):
+def gen_building_image_prompt(building, location, llm=OpenAI(temperature=openai_generation_temperature)):
     chain_image_building = LLMChain(llm=llm, prompt=prompt_image_building)
 
     return image_prompt_process(chain_image_building({
@@ -149,8 +149,8 @@ def gen_building_image_prompt(building, location, llm=OpenAI(temperature=setting
     }))
 
 @retry(3)
-def gen_item_image_prompt(object, location, llm=OpenAI(temperature=settings.openai_generation_temperature)):
-    chain_image_item = LLMChain(llm=llm, prompt=prompt_image_item
+def gen_item_image_prompt(object, location, llm=OpenAI(temperature=openai_generation_temperature)):
+    chain_image_item = LLMChain(llm=llm, prompt=prompt_image_item)
     return image_prompt_process(chain_image_item({
         'location':location.description,
         'item':f"{object.name}: {object.description}",
@@ -158,7 +158,7 @@ def gen_item_image_prompt(object, location, llm=OpenAI(temperature=settings.open
     }))
 
 @retry(3)
-def gen_character_image_prompt(object, location, llm=OpenAI(temperature=settings.openai_generation_temperature)):
+def gen_character_image_prompt(object, location, llm=OpenAI(temperature=openai_generation_temperature)):
     chain_image_character = LLMChain(llm=llm, prompt=prompt_image_character)
     return image_prompt_process(chain_image_character({
         'location':location.description,
