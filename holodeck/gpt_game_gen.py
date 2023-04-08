@@ -90,8 +90,7 @@ def initialize_location(location_dict, encounters_list):
         for trigger_dict in triggers_dicts:
             trigger_type = trigger_dict['type']
             trigger = None
-            if trigger_type.upper
-            () == TriggerType.WAY.name and trigger_dict.get('way'):
+            if trigger_type.upper() == TriggerType.WAY.name and trigger_dict.get('way'):
                 trigger = Trigger(TriggerType.WAY, way=get_or_create_way_by_name(trigger_dict.get('way')))
             elif trigger_type.upper() == TriggerType.BUILDING.name and trigger_dict.get('building'):
                 trigger = Trigger(TriggerType.BUILDING, building=get_or_create_building_by_name(trigger_dict.get('building')))

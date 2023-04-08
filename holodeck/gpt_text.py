@@ -9,7 +9,7 @@ from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from .prompts import *
 
-
+from .models.game_objects import *
 import logging
 import functools
 
@@ -116,6 +116,15 @@ def generate_critter_image_prompt(object, location):
         'critter':f"{object.name}: {object.description}",
         'style':style,
     }))
+
+def generate_object_image_prompt(object, location):
+    if isinstance(object, Critter):
+        return generate_critter_image_prompt(object, location)
+ 
+    if isinstance(object, Character):
+        return generate_character_image_prompt(object, location)
+    if isinstance(object, Item):
+        return generate_item_image_prompt(object, location)
 
 
 import traceback
