@@ -1,7 +1,9 @@
 import os
 from helpers.gpt_text_decoding import detoml
 import yaml
-from .settings import styles
+
+from ..helpers import retry
+from ..settings import styles
 
 style = styles[0]
 
@@ -9,33 +11,13 @@ from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from .prompts import *
 
-from .models.game_objects import *
+from ..models import *
 import logging
-import functools
 
 # Configure logging to stdout
 logging.basicConfig(level=logging.ERROR)
 
 
-def retry(max_attempt: int=3):
-    """
-    Function decorator that retries calling a function with a specified maximum number of attempts,
-    logs errors to stdout, and raises an exception if the function fails after reaching the maximum number of attempts.
-    """
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            attempts = 0
-            while attempts < max_attempt:
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    # Log the error to stdout
-                    print(f'Error in function {func.__name__}: {e}')
-                    attempts += 1
-            raise Exception(f'Function {func.__name__} failed after {max_attempt} attempts')
-        return wrapper
-    return decorator
 
 llm = OpenAI(temperature=0.9)
 
