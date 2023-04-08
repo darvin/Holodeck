@@ -122,8 +122,7 @@ import asyncio
 @app.post("/image/images")
 async def image_prompts_regenerate():
     with Session(engine) as session:
-        images = session.exec(select(GameObjectImage)).all()
-        loop = asyncio.get_running_loop()
+        images = session.exec(select(GameObjectImage).where(GameObjectImage.generated==False)).all()
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             results = await asyncio.gather(*[
                 generate_image_from_model_and_save(image) 
@@ -188,16 +187,15 @@ async def image_prompts_regenerate():
 
         result = []
         for obj, prompt_txt in img_prompts:
-            img = Image()
-            img.prompt = prompt_txt
+            img = GameObjectImage(prompt=prompt_txt)
             obj.image = img
-            session.add(obj)
             session.add(img)
+            session.add(obj)
             result.append((obj,img))
         session.commit()
         for obj, img in result:
-            session.refresh(obj)
             session.refresh(img)
+            session.refresh(obj)
         return result
 
 
