@@ -16,7 +16,10 @@ class GameCharacter(SQLModel, table=True):
     advantages: List[str] = Field(default=[], nullable=True)
     disadvantages: List[str] = Field(default=[], nullable=True)
     skills: List[str] = Field(default=[], nullable=True)
-    character_id: int = Field(foreign_key="character.id")
+    character: 'Character' = Relationship(
+        sa_relationship_kwargs={'uselist': False},
+        back_populates="game_character"
+    )
 
 
 class GameItem(SQLModel, table=True):
@@ -35,4 +38,4 @@ class GameItem(SQLModel, table=True):
     rarity: Optional[str] = Field(default=None)
     enchantments: Optional[List[str]] = Field(default=[])
     item_id: Optional[int] = Field(foreign_key="item.id")
-    item: 'Item' = Relationship(back_populates="game_items")
+    item: 'Item' = Relationship()

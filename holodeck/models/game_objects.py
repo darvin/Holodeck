@@ -109,6 +109,9 @@ class Character(SQLModel, table=True):
     name: str
     description: str
     location_id: Optional[int] = Field(foreign_key="location.id", default=None)
+    game_items: List["GameItem"] = Relationship()
+    game_character_id: Optional[int] = Field(foreign_key="gamecharacter.id")
+    game_character: 'GameCharacter' = Relationship(back_populates="character")
 
 
     def __init__(self, name:str, description:str):
