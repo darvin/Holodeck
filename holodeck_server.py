@@ -49,16 +49,6 @@ from holodeck.gpt_text import generate_location_and_encounters
 import traceback
 
 
-location_prompts = [
-    # "steampunk city with skyscrapers",
-    # "cyberpunk village in Japanese rustic style",
-    "fantasy dungsseons and dragons",
-    "noir city from 1930s",
-    # "StarTrek inspired spaceship",
-    # "undeground mine of goblins",
-    # "SuperMario style magic land plain",
-    # "SuperMario style magic land beach",
-]
 
 
 import concurrent.futures
@@ -100,20 +90,8 @@ from holodeck.gpt_text import \
         generate_building_image_prompt, \
         generate_location_image_prompt
 
-import PIL.Image as Image
  
 
-async def generate_image_from_model_and_save(image_model):
-    print(f">> requesting image for prompt: '{image_model.prompt}'<<<")
-    image_bytes = await generate_image(prompt=image_model.prompt)
-    print(">> received image!")
-    image = Image.open(image_bytes)
-    image_file_name = f".images/{image_model.id}.png"
-    image.save(image_file_name)
-    image.close()
-    image_bytes.close()
-    del image_bytes
-    return image_model
 
 import asyncio
 
@@ -123,7 +101,7 @@ async def image_images_regenerate():
         images = session.exec(select(GameObjectImage).where(GameObjectImage.generated==False)).all()
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             results = await asyncio.gather(*[
-                generate_image_from_model_and_save(image) 
+                image.generate()
                 for image in images
             ])
 

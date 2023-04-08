@@ -29,3 +29,15 @@ styles = [   #"hand drawn watercolor"
 # # very fast
 styles = ["intricate, elegant, highly detailed, digital painting, artstation, concept art, smooth, sharp focus, illustration, art by otomo katsuhiro and hyung-tae kim and oshii mamoru",]
 img_gen_model = "runwayml/stable-diffusion-v1-5"
+
+
+location_prompts = [
+    # "steampunk city with skyscrapers",
+    # "cyberpunk village in Japanese rustic style",
+    "fantasy dungsseons and dragons",
+    "noir city from 1930s",
+    # "StarTrek inspired spaceship",
+    # "undeground mine of goblins",
+    # "SuperMario style magic land plain",
+    # "SuperMario style magic land beach",
+]
