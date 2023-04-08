@@ -16,5 +16,10 @@
       "path": "/bin/python3",
       "type": "pythonEnvironment"
     }
-  ]
+  ],
+  "python.testing.pytestArgs": [
+    "."
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

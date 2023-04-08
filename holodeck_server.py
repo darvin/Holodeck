@@ -5,9 +5,7 @@ from fastapi import FastAPI, HTTPException, Response
 
 import os
 # from fastapi_sqlalchemy import DBSessionMiddleware, db
-from holodeck.models.game_objects import *
-from holodeck.models.game_engine import *
-from holodeck.models.images import *
+from holodeck.models import *
 # from sqlalchemy.orm import joinedload
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from holodeck.gpt_image import generate_image

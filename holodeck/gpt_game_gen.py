@@ -3,11 +3,11 @@ import random
 import base64
 import uuid
 import base64
-from .models.game_objects import Location, \
+from .models import Location, \
                         Building, \
                         Way, \
                         Character, \
-                        Item, Critter, \
+                        Item, \
                         Trigger, TriggerType, \
                         Encounter, \
                         Action
@@ -60,9 +60,11 @@ def initialize_location(location_dict, encounters_list):
             return None
         for way in location.ways_outgoing:
             if way.name and  way.name.lower() == way_name.lower():
-                location.add_way(way)
                 return way
-        return Way(way_name, f"<a description of way {way_name}>")
+        # new way, not found in location!
+        way = Way(way_name, f"<a description of way {way_name}>")
+        location.add_way(way)
+        return way
 
     def get_or_create_building_by_name(building_name):
         if not building_name:
@@ -92,6 +94,8 @@ def initialize_location(location_dict, encounters_list):
             trigger = None
             if trigger_type.upper() == TriggerType.WAY.name and trigger_dict.get('way'):
                 trigger = Trigger(TriggerType.WAY, way=get_or_create_way_by_name(trigger_dict.get('way')))
+            elif trigger_type.upper() == TriggerType.WAY.name and trigger_dict.get('way') is None: # any way triggers
+                trigger = Trigger(TriggerType.WAY)
             elif trigger_type.upper() == TriggerType.BUILDING.name and trigger_dict.get('building'):
                 trigger = Trigger(TriggerType.BUILDING, building=get_or_create_building_by_name(trigger_dict.get('building')))
             if trigger:
@@ -100,11 +104,17 @@ def initialize_location(location_dict, encounters_list):
         for action_dict in encounter_dict.get('actions', []) or []:
             action_type = action_dict['type'].strip()
             if action_type in ['character', 'ship', 'vessel', 'characters', 'robot']:
-                action_obj = Character(action_dict.get('name', f"Character {get_character_number()}"), action_dict['description'])
+                action_obj = Character(action_dict.get('name', f"Character {get_character_number()}"),
+                                       action_dict['description'],
+                                       character_type="critter", 
+                                       character_subtype=action_type)
             elif action_type == 'item':
                 action_obj = Item(action_dict.get('name', f"Item {get_item_number()}"), action_dict['description'])
             elif action_type in ['critter', 'creature', 'computer']:
-                action_obj = Critter(action_dict.get('name', f"Critter {get_critter_number()}"), action_dict['description'])
+                action_obj = Character(action_dict.get('name', f"Critter {get_critter_number()}"), 
+                                       action_dict['description'],
+                                       character_type="critter", 
+                                       character_subtype=action_type)
             elif action_type == 'building':
                 action_obj = Building(action_dict.get('name', f"Building {get_building_number()}"), action_dict['description'], True)
             else:
@@ -114,41 +124,3 @@ def initialize_location(location_dict, encounters_list):
         location.add_encounter(encounter)
     return location
 
-
-if __name__ == "__main__":
-    location_dict = \
-{'name': 'Sky City Clankersburg',
- 'description': 'A large floating city comprised of steampunk-style buildings and vehicles. The city is bustling with activity, and people are zipping around on flying cars of all shapes and sizes. In the center of the city is an airship dock, with several airships coming and going. \n',
- 'buildings': [{'name': 'Airship Dock',
-   'description': 'A large dock with several airships coming and going.',
-   'enterable': True},
-  {'name': 'Steampunk-style Buildings',
-   'description': 'Several buildings made of various materials and with various contraptions and decorations.'}],
- 'ways': [{'name': 'Flying Cars',
-   'description': 'Zipping around the city, people fly in all shapes and sized cars.'},
-  {'name': 'Airships',
-   'description': 'Several airships coming and going from the airship dock.'}]}
-
-    encounters_list = \
-[{'probability': 0.2,
-  'description': 'You spot a group of street urchins stealing items off the flying cars',
-  'trigger': {'type': 'way', 'way': 'Flying Cars'},
-  'actions': [{'type': 'critter',
-    'description': 'Group of street urchins pilfering items off flying cars'}]},
- {'probability': 0.1,
-  'description': 'You see a crew of airship brigands attempting to hijack an airship',
-  'trigger': {'type': 'way', 'way': 'Airships'},
-  'actions': [{'type': 'character',
-    'name': 'Airship Brigands',
-    'description': 'A rowdy crew of airship hijackers'}]},
- {'probability': 0.2,
-  'description': 'Inside one of the steampunk-style buildings, you find a secret laboratory',
-  'trigger': {'type': 'building', 'building': 'Steampunk-style Buildings'},
-  'actions': [{'type': 'building',
-    'name': 'Secret Laboratory',
-    'description': 'A hidden laboratory full of strange contraptions and machinery'}]},
- {'probability': 0.1,
-  'description': 'A mysterious figure in a hooded cloak is seen entering one of the airships',
-  'trigger': {'type': 'way'}}]
-
-    print(initialize_location(location_dict, encounters_list))
