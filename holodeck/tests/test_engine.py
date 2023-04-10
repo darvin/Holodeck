@@ -145,8 +145,9 @@ engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
 
 SQLModel.metadata.create_all(engine)
 
-game_engine = GameEngine(db_engine=engine)
 db = Session(engine)
+game_engine = GameEngine(db=db)
+
 
 def seed_character():
     name_list = ["Gandalf", "Merlin", "Dumbledore", "Gandalf", "Morgoth", "Saruman"]
@@ -173,8 +174,7 @@ def seed_character():
         character_type="character",
         character_subtype="player",
     )
-    db.add(fantasy_character)
-    db.commit()
+    
 
     game_character = GameCharacter(
         strength=strength,
@@ -188,7 +188,7 @@ def seed_character():
         skills=skills,
         character=fantasy_character,
     )
-    db.add(game_character)
+    db.add(game_character, fantasy_character)
     db.commit()
     db.refresh(game_character)
     return game_character
@@ -221,24 +221,24 @@ def test_get_my_character():
     game_character = seed_character()
 
     # Retrieve the character from the database
-    c = game_engine.get_character(id=game_character.id)
+    c = game_engine.get_character(id=game_character.character.id)
 
     # Check that the character object returned is of the expected type and has the expected properties
     assert isinstance(c.character, Character)
     assert isinstance(c, GameCharacter)
-    assert c.character.name == "Gandalf"
-    assert c.character.description == "A wise old wizard"
-    assert c.character.character_type == "character"
-    assert c.character.character_subtype == "player"
-    assert c.strength == 10
-    assert c.dexterity == 8
-    assert c.intelligence == 15
-    assert c.health == 100
-    assert c.will == 12
-    assert c.perception == 14
-    assert c.advantages == ["Magical Aptitude", "Staff Mastery"]
-    assert c.disadvantages == ["Old Age", "No Armor"]
-    assert c.skills == ["Magic", "Staff"]
+    assert c.character.name == game_character.character.name
+    assert c.character.description == game_character.character.description
+    assert c.character.character_type == game_character.character.character_type
+    assert c.character.character_subtype == game_character.character.character_subtype
+    assert c.strength == game_character.strength
+    assert c.dexterity == game_character.dexterity
+    assert c.intelligence == game_character.intelligence
+    assert c.health == game_character.health
+    assert c.will == game_character.will
+    assert c.perception == game_character.perception
+    assert set(c.advantages) == set(game_character.advantages)
+    assert set(c.disadvantages) == set(game_character.disadvantages)
+    assert set(c.skills) == set(game_character.skills)
 
 
 import random
