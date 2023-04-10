@@ -28,5 +28,10 @@ class GameEngine:
 
         return character.game_character
 
-    def act(self, prompt:str):
+    def act(self, character_id: int, prompt:str):
+        prompt_augmented = prompt # fixme change a lot
+
+        res = self.llm(prompt_augmented)
+        sql = res.sql
+        self.db.execute(sql)
         pass

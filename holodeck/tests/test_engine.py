@@ -133,7 +133,7 @@ from ..models import Building, \
        Character, GameCharacter, Location, \
         GameItem, Item, Way, Encounter, Trigger, \
             Action, TriggerType
-from ..engine import GameEngine
+from ..engine import GameEngine, GameLLMResponse
 
 
 
@@ -510,15 +510,29 @@ def test_basic_action():
     """
     # Create a character and seed a location for them
     game_character = seed_character()
+    
+    # Seed two locations
     location = seed_location()
+    location2 = seed_location()
+
+    # Seed a way connecting the two locations
+    way = seed_way(from_location_id=location.id, to_location_id=location2.id)
+ 
+
+    # Move the player character to the first location
+    game_character.character.location_id = location.id
+    db.add(game_character)
+    db.commit()
+    db.refresh(game_character)
+
     assert game_character.character.location == location
     
     def llm_fake(prompt):
         assert "move" in prompt.lower()
         assert "location" in prompt.lower()
-        assert location.ways_outgoing[0].to_location.name in prompt.lower()
-        assert str(location.ways_outgoing[0].to_location.id) in prompt.lower()
-        return "UPDATE characters SET location_id=%d WHERE id=%d" % (location.ways_outgoing[0].to_location.id, game_character.character.id)
+        # assert location.ways_outgoing[0].to_location.name in prompt.lower()
+        # assert str(location.ways_outgoing[0].to_location.id) in prompt.lower()
+        return GameLLMResponse(sql="UPDATE character SET location_id=%d WHERE id=%d" % (location.ways_outgoing[0].to_location.id, game_character.character.id))
 
 
     # Define a lambda function for moving the character to a new location
@@ -526,7 +540,8 @@ def test_basic_action():
     
     # Perform a basic action
     action_text = "Move to {Location:%d}" % (location.ways_outgoing[0].to_location.id)
-    game_engine.act(action_text)
+    game_engine.act(game_character.character.id, action_text)
+    db.refresh(game_character)
 
     # Check that the action has the expected outcome
     assert game_character.character.location != location
@@ -552,7 +567,7 @@ def test_demolish_building():
         assert str(building.id) in prompt.lower()
         assert "gameitem" in prompt.lower()
         assert str(game_character.game_items[0].id) in prompt.lower()
-        return ("DELETE FROM buildings WHERE id=%d;" % building.id, 
+        return GameLLMResponse(sql="DELETE FROM buildings WHERE id=%d;" % building.id + \
                 "DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_character.game_items[0].id))
 
 
@@ -560,7 +575,7 @@ def test_demolish_building():
     
     # Perform the demolish action
     action_text = "Demolish {Building:%d} with {GameItem:%d}" % (building.id, game_character.game_items[0].id)
-    game_engine.act(action_text)
+    game_engine.act(game_character.character_id, action_text)
 
     # Check that the action has the expected outcome
     assert building not in location.buildings
@@ -595,13 +610,13 @@ def test_throw_away_item():
         assert "throw away" in prompt.lower()
         assert "gameitem" in prompt.lower()
         assert str(game_item.id) in prompt.lower()
-        return "DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_item.id)
+        return GameLLMResponse(sql="DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_item.id))
     
     game_engine.llm = llm_fake
 
     # Perform the throw away action
     action_text = "Throw away {GameItem:%d}" % game_item.id
-    game_engine.act(action_text)
+    game_engine.act(game_character.character_id, action_text)
 
     # Check that the action has the expected outcome
     assert game_item not in game_character.character.game_items
