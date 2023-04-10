@@ -6,8 +6,13 @@ from ..generate.initialize_location import initialize_location
 from ..models import TriggerType
 
 
-sqlite_url = "sqlite+pysqlite:///.data/testdb.db"
 
+db_filepath = ".data/test1db.db"
+sqlite_url = f"sqlite+pysqlite:///{db_filepath}"
+
+import os
+if os.path.exists(db_filepath):
+    os.remove(db_filepath)
 
 
 connect_args = {"check_same_thread": False}
