@@ -17,8 +17,16 @@ class Location(SQLModel, table=True):
     name: str
     description: str
     buildings: List[Building] = Relationship()
-    ways_outgoing: List[Way] = Relationship()
-    # ways_incoming: List["Way"] = Relationship()
+    ways_outgoing: List[Way] = Relationship(
+        sa_relationship_kwargs={
+        "primaryjoin": "Way.from_location_id==Location.id", 
+        "lazy": "joined"
+        }, back_populates="from_location")
+    ways_incoming: List["Way"] = Relationship(
+        sa_relationship_kwargs={
+        "primaryjoin": "Way.to_location_id==Location.id", 
+        "lazy": "joined"
+        }, back_populates="to_location")
     encounters: List[Encounter] = Relationship()
     characters: List[Character] = Relationship()
 

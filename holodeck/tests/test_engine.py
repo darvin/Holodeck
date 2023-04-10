@@ -136,9 +136,13 @@ from ..models import Building, \
 from ..engine import GameEngine
 
 
-sqlite_url = "sqlite+pysqlite:///.data/test2db.db"
 
+db_filepath = ".data/test2db.db"
+sqlite_url = f"sqlite+pysqlite:///{db_filepath}"
 
+import os
+if os.path.exists(db_filepath):
+    os.remove(db_filepath)
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
@@ -461,10 +465,8 @@ def test_move_to_other_location_existing():
     location2 = seed_location()
 
     # Seed a way connecting the two locations
-    way = seed_way(from_location_id=location1.id, to_location_id=location2)
-    db.add(way)
-    db.commit()
-    db.refresh(way)
+    way = seed_way(from_location_id=location1.id, to_location_id=location2.id)
+ 
 
     # Move the player character to the first location
     game_character.character.location_id = location1.id
@@ -481,9 +483,7 @@ def test_move_to_other_location_existing():
     l = c.character.location
     assert l == location2
 
-    # Return an error if the destination location does not exist
-    with pytest.raises(Exception):
-        game_engine.move_character(game_character.id, 9999)
+    assert game_engine.move_character(game_character.id, 9999) == False
 
 
 def test_move_to_other_location_non_existent():
