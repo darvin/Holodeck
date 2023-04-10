@@ -198,12 +198,13 @@ def seed_character():
 import random
 
 def seed_building(location_id):
-    name = "The " + random.choice(["Golden", "Silver", "Copper", "Iron"]) + " " + random.choice(["Dragon", "Phoenix", "Unicorn", "Gryphon", "Kraken"]) + " Inn"
-    description = "A cozy inn with a warm fireplace and friendly staff."
+    name=f"{random.choice(['Ruined', 'Abandoned', 'Haunted'])} {random.choice(['Keep', 'Tower', 'Castle'])}"
+    description=f"A {random.choice(['crumbling', 'mysterious', 'forbidding'])} structure {random.choice(['overgrown with vines', 'haunted by spirits', 'surrounded by mist'])}."
     building = Building(
         name=name,
         description=description,
         location_id=location_id,
+        enterable=random.choice([True, False])
     )
     db.add(building)
     db.commit()
@@ -243,7 +244,7 @@ def test_get_my_character():
 
 import random
 
-def seed_location_with_buidlings():
+def seed_location_with_buildings():
     location = Location(
         name=f"{random.choice(['Misty', 'Frosty', 'Shadow'])} {random.choice(['Caverns', 'Peaks', 'Valley'])}",
         description=f"A {random.choice(['sinister', 'majestic', 'enchanted'])} location {random.choice(['shrouded in mist', 'blanketed in snow', 'overrun with creatures'])}.",
@@ -312,26 +313,13 @@ def seed_location():
     return location
 
 
-def seed_building(location):
-    building = Building(
-        name=f"{random.choice(['Ruined', 'Abandoned', 'Haunted'])} {random.choice(['Keep', 'Tower', 'Castle'])}",
-        description=f"A {random.choice(['crumbling', 'mysterious', 'forbidding'])} structure {random.choice(['overgrown with vines', 'haunted by spirits', 'surrounded by mist'])}.",
-        enterable=True,
-        location=location,
-    )
-    db.add(building)
-    db.commit()
-    db.refresh(building)
 
-    return building
-
-
-def seed_way(from_location, to_location=None):
+def seed_way(from_location_id, to_location_id=None):
     way = Way(
         name=f"{random.choice(['Eventful', 'Non-eventful', 'Safe', 'Dangerous'])} {random.choice(['Path', 'Trail', 'Road'])}",
         description=f"A {random.choice(['treacherous', 'scenic', 'winding', 'straight'])} route {random.choice(['through the mountains', 'across the plains', 'along the coast', 'into the forest'])}.",
-        from_location=from_location,
-        to_location=to_location,
+        from_location_id=from_location_id,
+        to_location_id=to_location_id,
     )
     db.add(way)
     db.commit()
@@ -340,11 +328,11 @@ def seed_way(from_location, to_location=None):
     return way
 
 
-def seed_encounter(location):
+def seed_encounter(location_id):
     encounter = Encounter(
         probability=1.0,
         description=f"{random.choice(['A group of monsters emerges from the shadows, brandishing rusty weapons and snarling menacingly.', 'You suddenly feel a chill run down your spine.', 'You hear a faint whispering in the wind.', 'You see a figure in the distance, beckoning you forward.'])}",
-        location=location,
+        location_id=location_id,
     )
     db.add(encounter)
     db.commit()
@@ -362,18 +350,18 @@ def test_get_current_location():
     """
     game_character = seed_character()
     location = seed_location()
-    building1 = seed_building(location=location)
-    building2 = seed_building(location=location)
-    way1 = seed_way(origin=location, destination=seed_location())
-    encounter = seed_encounter(location=location)
+    building1 = seed_building(location_id=location.id)
+    building2 = seed_building(location_id=location.id)
+    way1 = seed_way(from_location_id=location.id, to_location_id=seed_location().id)
+    encounter = seed_encounter(location_id=location.id)
 
-    game_character.location_id = location.id
+    game_character.character.location_id = location.id
     db.add(game_character)
     db.commit()
     db.refresh(game_character)
 
     # Retrieve the current location of the player character
-    c = game_engine.get_character(id=game_character.id)
+    c = game_engine.get_character(id=game_character.character.id)
     assert c is not None
     l = c.character.location
     assert l == location
@@ -473,27 +461,22 @@ def test_move_to_other_location_existing():
     location2 = seed_location()
 
     # Seed a way connecting the two locations
-    way = Way(
-        name="Misty Pass",
-        description="A treacherous path through the mountains, winding its way down to the valley below.",
-        from_location=location1,
-        to_location=location2,
-    )
+    way = seed_way(from_location_id=location1.id, to_location_id=location2)
     db.add(way)
     db.commit()
     db.refresh(way)
 
     # Move the player character to the first location
-    game_character.location_id = location1.id
+    game_character.character.location_id = location1.id
     db.add(game_character)
     db.commit()
     db.refresh(game_character)
 
     # Move the player character to the second location
-    game_engine.move_character(game_character.id, location2.id)
+    game_engine.move_character(game_character.character.id, location2.id)
 
     # Check that the player character's location is correctly updated after the move
-    c = game_engine.get_character(id=game_character.id)
+    c = game_engine.get_character(id=game_character.character.id)
     assert c is not None
     l = c.character.location
     assert l == location2

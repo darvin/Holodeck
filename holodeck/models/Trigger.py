@@ -22,10 +22,10 @@ class Trigger(SQLModel, table=True):
 
 
 
-    def __init__(self, type:TriggerType, way:Optional[Way]=None, building:Optional[Building]=None):
-        self.type = type
-        self.way = way
-        self.building = building
+    # def __init__(self, type:TriggerType, way:Optional[Way]=None, building:Optional[Building]=None):
+    #     self.type = type
+    #     self.way = way
+    #     self.building = building
 
     def __str__(self):
         fields = []

@@ -16,11 +16,11 @@ class Encounter(SQLModel, table=True):
 
 
 
-    def __init__(self, probability: float, description: str, triggers: List['Trigger'], actions: List['Action']):
-        self.probability = probability
-        self.description = description
-        self.triggers = triggers
-        self.actions = actions
+    # def __init__(self, probability: float, description: str, triggers: List['Trigger'], actions: List['Action']):
+    #     self.probability = probability
+    #     self.description = description
+    #     self.triggers = triggers
+    #     self.actions = actions
 
     def __str__(self):
         if self.triggers:

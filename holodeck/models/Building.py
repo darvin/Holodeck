@@ -17,10 +17,10 @@ class Building(SQLModel, table=True):
     
 
 
-    def __init__(self, name:str, description:str, enterable:bool):
-        self.name = name
-        self.description = description
-        self.enterable = enterable
+    # def __init__(self, name:str, description:str, enterable:bool):
+    #     self.name = name
+    #     self.description = description
+    #     self.enterable = enterable
 
     def __str__(self):
         enter_str = "Enterable" if self.enterable else "Not enterable"

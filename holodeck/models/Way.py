@@ -11,9 +11,9 @@ class Way(SQLModel, table=True):
     from_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[from_location_id]))# , back_populates="ways_outgoing")
     # to_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[to_location_id])) #, back_populates="ways_incoming")
 
-    def __init__(self, name:str, description:str):
-        self.name = name
-        self.description = description
+    # def __init__(self, name:str, description:str):
+    #     self.name = name
+    #     self.description = description
         
     def __str__(self):
         return f"{self.name}: {self.description}"

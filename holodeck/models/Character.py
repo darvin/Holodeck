@@ -20,11 +20,11 @@ class Character(SQLModel, table=True):
     image_id: Optional[int] = Field(foreign_key="image.id")
     image: 'GameObjectImage' = Relationship()
 
-    def __init__(self, name:str, description:str, character_type:str, character_subtype:str):
-        self.name = name
-        self.description = description
-        self.character_type = character_type
-        self.character_subtype = character_subtype
+    # def __init__(self, name:str, description:str, character_type:str, character_subtype:str):
+    #     self.name = name
+    #     self.description = description
+    #     self.character_type = character_type
+    #     self.character_subtype = character_subtype
 
     def __str__(self):
         return f"{self.name}: {self.description}"

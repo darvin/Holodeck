@@ -26,9 +26,9 @@ class Location(SQLModel, table=True):
     image: GameObjectImage = Relationship()
 
 
-    def __init__(self, name:str, description:str):
-        self.name = name
-        self.description = description
+    # def __init__(self, name:str, description:str):
+    #     self.name = name
+    #     self.description = description
 
     def add_encounter(self, encounter):
         encounter.location_id = self.id
