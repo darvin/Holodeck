@@ -1,6 +1,5 @@
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
-from helpers.gpt_text_decoding import detoml
 from ...helpers.retry import retry
 
 from ...settings import openai_generation_temperature, styles

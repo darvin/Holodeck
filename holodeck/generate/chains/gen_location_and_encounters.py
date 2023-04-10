@@ -1,6 +1,6 @@
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
-from helpers.gpt_text_decoding import detoml
+from ....helpers import detoml
 from ...helpers.retry import retry
 
 

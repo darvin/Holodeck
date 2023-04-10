@@ -1,5 +1,5 @@
 
-
+"""
 class Character(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
@@ -110,7 +110,43 @@ class Building(SQLModel, table=True):
     location_id: Optional[int] = Field(foreign_key="location.id")
     location: 'Location' = Relationship(back_populates="buildings")
 
+    
+
+
+class Way(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: str
+    from_location_id: int = Field(foreign_key="location.id")
+    # to_location_id: int = Field(foreign_key="location.id")
+    from_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[from_location_id]))# , back_populates="ways_outgoing")
+    # to_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[to_location_id])) #, back_populates="ways_incoming")
+
+"""
+
 import random
+import pytest
+
+from sqlmodel import SQLModel, Session, create_engine
+
+from ..models import Building, \
+       Character, GameCharacter, Location, \
+        GameItem, Item, Way, Encounter, Trigger, \
+            Action, TriggerType
+from ..engine import GameEngine
+
+
+sqlite_url = "sqlite+pysqlite:///.data/test2db.db"
+
+
+
+connect_args = {"check_same_thread": False}
+engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
+
+SQLModel.metadata.create_all(engine)
+
+game_engine = GameEngine(db_engine=engine)
+db = Session(engine)
 
 def seed_character():
     name_list = ["Gandalf", "Merlin", "Dumbledore", "Gandalf", "Morgoth", "Saruman"]
@@ -204,16 +240,6 @@ def test_get_my_character():
     assert c.disadvantages == ["Old Age", "No Armor"]
     assert c.skills == ["Magic", "Staff"]
 
-
-
-class Way(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    description: str
-    from_location_id: int = Field(foreign_key="location.id")
-    # to_location_id: int = Field(foreign_key="location.id")
-    from_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[from_location_id]))# , back_populates="ways_outgoing")
-    # to_location: 'Location' = Relationship(sa_relationship=RelationshipProperty("Location", foreign_keys=[to_location_id])) #, back_populates="ways_incoming")
 
 import random
 
@@ -366,8 +392,6 @@ def test_get_current_location():
 
 import random
 
-from app.models import GameItem
-from app.database import SessionLocal
 
 def seed_game_item():
     # Define possible properties for the game item
@@ -420,8 +444,6 @@ def seed_game_item():
     # Create the game item object
     game_item = GameItem(name=name, description=description, weight=weight, rarity=rarity, effect=effect)
 
-    # Add the game item to the database
-    db = SessionLocal()
     db.add(game_item)
     db.commit()
     db.refresh(game_item)
@@ -508,14 +530,16 @@ def test_basic_action():
     location = seed_location()
     assert game_character.character.location == location
     
-    # Define a lambda function for moving the character to a new location
-    game_engine.llm = lambda prompt: (
+    def llm_fake(prompt):
         assert "move" in prompt.lower()
         assert "location" in prompt.lower()
         assert location.ways_outgoing[0].to_location.name in prompt.lower()
         assert str(location.ways_outgoing[0].to_location.id) in prompt.lower()
-        return "UPDATE characters SET location_id=%d WHERE id=%d" % (location.ways_outgoing[0].to_location.id, game_character.character.id))
-    )
+        return "UPDATE characters SET location_id=%d WHERE id=%d" % (location.ways_outgoing[0].to_location.id, game_character.character.id)
+
+
+    # Define a lambda function for moving the character to a new location
+    game_engine.llm = llm_fake
     
     # Perform a basic action
     action_text = "Move to {Location:%d}" % (location.ways_outgoing[0].to_location.id)
@@ -539,8 +563,7 @@ def test_demolish_building():
     building = seed_building(location_id=location.id)
     assert building in location.buildings
     
-    # Define a lambda function for demolishing a building
-    game_engine.llm = lambda prompt: (
+    def llm_fake(prompt):
         assert "demolish" in prompt.lower()
         assert "building" in prompt.lower()
         assert str(building.id) in prompt.lower()
@@ -548,7 +571,9 @@ def test_demolish_building():
         assert str(game_character.game_items[0].id) in prompt.lower()
         return ("DELETE FROM buildings WHERE id=%d;" % building.id, 
                 "DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_character.game_items[0].id))
-    )
+
+
+    game_engine.llm = llm_fake
     
     # Perform the demolish action
     action_text = "Demolish {Building:%d} with {GameItem:%d}" % (building.id, game_character.game_items[0].id)
@@ -583,13 +608,14 @@ def test_throw_away_item():
     assert game_item in game_character.character.game_items
     
     # Define a lambda function for throwing away an item
-    game_engine.llm = lambda prompt: (
+    def llm_fake(prompt):
         assert "throw away" in prompt.lower()
         assert "gameitem" in prompt.lower()
         assert str(game_item.id) in prompt.lower()
         return "DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_item.id)
-    )
     
+    game_engine.llm = llm_fake
+
     # Perform the throw away action
     action_text = "Throw away {GameItem:%d}" % game_item.id
     game_engine.act(action_text)
