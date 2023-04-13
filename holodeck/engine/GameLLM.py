@@ -9,7 +9,12 @@ class GameLLMResponseType(str, Enum):
     TURNS_START = "turns_start"
 
 class GameLLMResponse:
-    def __init__(self, type:GameLLMResponseType=GameLLMResponseType.IMMEDIATE_ACTION, text:str="", sql:str="") -> None:
+    def __init__(self, 
+                 type:GameLLMResponseType=GameLLMResponseType.IMMEDIATE_ACTION, 
+                 text:str="", 
+                 sql:str=None, 
+                 sqls:list[str]=[]) -> None:
         self.type = type
         self.text = text
         self.sql = sql
+        self.sqls = sqls

@@ -32,6 +32,9 @@ class GameEngine:
         prompt_augmented = prompt # fixme change a lot
 
         res = self.llm(prompt_augmented)
-        sql = res.sql
-        self.db.execute(sql)
-        pass
+
+        if res.sql:
+            self.db.execute(res.sql)
+        elif res.sqls:
+            for sql in res.sqls:
+                self.db.execute(sql)

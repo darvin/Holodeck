@@ -557,6 +557,11 @@ def test_demolish_building():
     """
     # Create a character and seed a location with a building
     game_character = seed_character()
+    game_item = seed_game_item()
+    game_character.character.game_items.append(game_item)
+    db.commit()
+    db.refresh(game_character.character)
+
     location = seed_location()
     building = seed_building(location_id=location.id)
     assert building in location.buildings
@@ -566,20 +571,24 @@ def test_demolish_building():
         assert "building" in prompt.lower()
         assert str(building.id) in prompt.lower()
         assert "gameitem" in prompt.lower()
-        assert str(game_character.game_items[0].id) in prompt.lower()
-        return GameLLMResponse(sql="DELETE FROM buildings WHERE id=%d;" % building.id + \
-                "DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_character.game_items[0].id))
+        assert str(game_character.character.game_items[0].id) in prompt.lower()
+        return GameLLMResponse(sqls=["DELETE FROM building WHERE id=%d" % building.id ,
+                "DELETE FROM gameitem WHERE id=%d" % ( game_character.character.game_items[0].id)])
 
 
     game_engine.llm = llm_fake
     
     # Perform the demolish action
-    action_text = "Demolish {Building:%d} with {GameItem:%d}" % (building.id, game_character.game_items[0].id)
-    game_engine.act(game_character.character_id, action_text)
+    action_text = "Demolish {Building:%d} with {GameItem:%d}" % (building.id, game_character.character.game_items[0].id)
+    game_engine.act(game_character.character.id, action_text)
+
+
+    db.refresh(location)
+    db.refresh(game_character.character)
 
     # Check that the action has the expected outcome
     assert building not in location.buildings
-    assert game_character.game_items[0] not in game_character.character.game_items
+    assert game_item not in game_character.character.game_items
 
 
 def test_get_inventory():
@@ -610,13 +619,14 @@ def test_throw_away_item():
         assert "throw away" in prompt.lower()
         assert "gameitem" in prompt.lower()
         assert str(game_item.id) in prompt.lower()
-        return GameLLMResponse(sql="DELETE FROM character_game_items WHERE character_id=%d AND game_item_id=%d;" % (game_character.character.id, game_item.id))
+        return GameLLMResponse(sql="DELETE FROM gameitem WHERE character_id=%d AND id=%d;" % (game_character.character.id, game_item.id))
     
     game_engine.llm = llm_fake
 
     # Perform the throw away action
     action_text = "Throw away {GameItem:%d}" % game_item.id
-    game_engine.act(game_character.character_id, action_text)
+    game_engine.act(game_character.character.id, action_text)
+    db.refresh(game_character.character)
 
     # Check that the action has the expected outcome
     assert game_item not in game_character.character.game_items
