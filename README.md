@@ -1,6 +1,6 @@
 # MUDGPT 🎮
 
-MUDGPT is a revolutionary new game that blends the traditional elements of Multi-User Dungeons (MUDs) with the power of GPT (Generative Pre-trained Transformer) language models. 🤖
+MUDGPT is a revolutionary new game that blends the traditional elements of [Multi-User Dungeons (MUDs)](https://en.wikipedia.org/wiki/MUD) with the power of [GPT (Generative Pre-trained Transformer)](https://en.wikipedia.org/wiki/Generative_pre-trained_transformer) language models. 🤖
 
 
 ## Features
@@ -47,11 +47,6 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 ```
-
-# MUDGPT
-
-MUDGPT is a new genre of games that combines the traditional elements of Multi-User Dungeons (MUDs) with the power of pre-trained transformer language models like GPT (Generative Pre-trained Transformer).
-
 
 ## About
 
